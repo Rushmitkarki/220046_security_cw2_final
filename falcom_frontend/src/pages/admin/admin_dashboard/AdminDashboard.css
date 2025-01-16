@@ -1,0 +1,43 @@
+.arrows {
+  position: fixed;
+  bottom: 350px;
+  right: 750px;
+  pointer-events: none;
+}
+
+.arrow {
+  position: absolute;
+  font-size: 3em;
+  color: white;
+  transform: translate(-50%, -50%);
+}
+
+.arrow:nth-child(1) {
+  transform: translate(-50%, -150%);
+}
+
+.arrow:nth-child(2) {
+  transform: translate(-150%, -50%) rotate(45deg);
+}
+
+.arrow:nth-child(3) {
+  transform: translate(-50%, 50%) rotate(90deg);
+}
+
+.arrow:nth-child(4) {
+  transform: translate(50%, -50%) rotate(-45deg);
+}
+.point-image {
+  position: fixed;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+  width: 100px; /* Adjust size as needed */
+  height: auto;
+  z-index: 1000; /* Ensure it appears above other content */
+}
+
+
+.arrow:nth-child(5) {
+  transform: translate(-50%, 150%);
+}

@@ -1,0 +1,39 @@
+/* AboutPage.css */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  .text-white {
+    color: white;
+  }
+  
+  .text-3xl {
+    font-size: 2rem; /* Adjust size as needed */
+  }
+  
+  .font-bold {
+    font-weight: bold;
+  }
+  
+  .mt-4 {
+    margin-top: 1rem; /* Adjust size as needed */
+  }
+  
+  .mt-8 {
+    margin-top: 2rem; /* Adjust size as needed */
+  }
+  
+  .mb-4 {
+    margin-bottom: 1rem; /* Adjust size as needed */
+  }
+  
+  .mb-6 {
+    margin-bottom: 1.5rem; /* Adjust size as needed */
+  }
+  
+  p {
+    margin-bottom: 1rem;
+  }
+  

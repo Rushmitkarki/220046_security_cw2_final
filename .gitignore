@@ -1,0 +1,4 @@
+/falcom_frontend/node_modules
+/falcom_backend/node_modules
+/falcom_backend/public
+/falcom_backend/.env

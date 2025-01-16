@@ -1,0 +1,56 @@
+.register-container {
+  @apply min-h-screen flex items-center justify-center bg-gray-50;
+  background-image: url('../../assets/images/bck2gf.gif');
+  background-size: cover;
+  background-position: center;
+}
+
+.register-box {
+  @apply bg-white flex rounded-2xl shadow-lg max-w-7xl;
+  background-color: rgba(255, 255, 255, 0.849);
+}
+
+.register-form {
+  @apply w-1/2 p-8 bg-gray-50 rounded-l-2xl flex flex-col justify-center;
+  background-color: rgba(240, 238, 238, 0);
+}
+
+.register-title {
+  @apply text-3xl font-bold text-red-500;
+}
+
+.register-subtitle {
+  @apply text-lg mt-4 text-red-500;
+}
+
+.register-fields {
+  @apply flex flex-col gap-6 mt-8;
+}
+
+.register-input {
+  @apply p-3 rounded-xl border w-full;
+}
+
+.register-button {
+  @apply text-white rounded-xl py-2 hover:scale-105 duration-300;
+  background-color: rgb(44, 44, 44); /* Updated button color */
+}
+
+.login-link {
+  @apply mt-4 text-lg text-red-500;
+}
+
+.register-image {
+  @apply flex-1 hidden md:flex items-center justify-center;
+  max-width: 100%; /* Ensure it doesn't exceed the container's width */
+}
+
+.register-image img {
+  @apply rounded-r-2xl h-full object-cover;
+  max-width: 100%; /* Ensure it doesn't exceed the container's width */
+  height: auto; /* Maintain aspect ratio */
+}
+
+.error-message {
+  @apply text-red-500 text-sm absolute;
+}

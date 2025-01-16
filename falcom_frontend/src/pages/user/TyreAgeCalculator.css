@@ -1,0 +1,54 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    background: hsl(0, 0%, 13%);
+  }
+  
+  .bg-gray-800 {
+    background-color: #333;
+  }
+  
+  input {
+    background-color: #fff;
+    color: #000;
+  }
+  
+  button {
+    transition: background-color 0.3s;
+  }
+  
+  button:hover {
+    background-color: #555;
+  }
+  
+  .font-bold {
+    font-weight: bold;
+  }
+  
+  .shadow-lg {
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+  }
+  
+  .rounded-lg {
+    border-radius: 1rem;
+  }
+  
+  .rounded-full {
+    border-radius: 9999px;
+  }
+  
+  .text-white {
+    color: white;
+  }
+  
+  .text-xl {
+    font-size: 1.25rem;
+  }
+  
+  .text-3xl {
+    font-size: 1.875rem;
+  }
+  

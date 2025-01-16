@@ -1,0 +1,135 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.login-container {
+  @apply min-h-screen flex items-center justify-center bg-gray-50;
+  background-image: url('../../assets/images/bckgf.gif');
+  background-size:cover;
+  background-position: center;
+}
+
+.login-box {
+  @apply flex rounded-2xl shadow-lg max-w-3xl mx-auto;
+  background-color: rgba(255, 255, 255, 0.849);
+  transform: translateX(); /* Adjust the percentage to move it to the left */
+}
+
+.login-form {
+  @apply w-3/4 p-8 rounded-l-2xl flex flex-col justify-center;
+  background-color: rgba(240, 238, 238, 0); /* Updated to light grey */
+}
+
+.login-title {
+  @apply text-2xl font-bold text-red-500;
+}
+
+.login-subtitle {
+  @apply text-sm mt-4 text-red-500;
+}
+
+.login-fields {
+  @apply flex flex-col gap-4 mt-8;
+}
+
+.input-group {
+  @apply flex flex-col relative;
+}
+
+.login-input {
+  @apply p-3 rounded-xl border;
+}
+
+.login-button {
+  @apply text-white rounded-xl py-2 hover:scale-105 duration-300;
+  background-color: rgb(44, 44, 44); /* Updated button color */
+}
+
+.register-link {
+  @apply mt-4 text-sm text-red-500;
+}
+
+.login-image {
+  @apply w-1/4 hidden md:flex items-center justify-center;
+}
+
+.login-image img {
+  @apply rounded-r-2xl object-cover;
+  max-height: 100%; /* Ensure image does not exceed container height */
+  width: auto; /* Maintain aspect ratio */
+}
+
+.login-error {
+  @apply text-red-500 text-sm mt-1; /* Adjust as needed for spacing */
+}
+
+.register-container {
+  @apply min-h-screen flex items-center justify-center bg-gray-50;
+  background-image: url('../../assets/images/bckgf.gif');
+  background-size: cover;
+  background-position: center;
+}
+
+.register-box {
+  @apply bg-white flex rounded-2xl shadow-lg max-w-3xl mx-auto;
+  transform: translateX(); /* Adjust the percentage to move it to the left */
+}
+
+.register-form {
+  @apply w-3/4 p-8 bg-gray-50 rounded-l-2xl flex flex-col justify-center; /* Updated to grey */
+}
+
+.register-title {
+  @apply text-2xl font-bold text-red-500;
+}
+
+.register-subtitle {
+  @apply text-sm mt-4 text-red-500;
+}
+
+.register-fields {
+  @apply flex flex-col gap-4 mt-8;
+}
+
+.register-input {
+  @apply p-3 rounded-xl border;
+}
+
+.register-button {
+  @apply text-white rounded-xl py-2 hover:scale-105 duration-300;
+  background-color: rgb(44, 44, 44); /* Updated button color */
+}
+
+.login-link {
+  @apply mt-4 text-sm text-red-500;
+}
+
+.register-image {
+  @apply w-1/4 hidden md:flex items-center justify-center;
+}
+
+.register-image img {
+  @apply rounded-r-2xl object-cover;
+  max-height: 100%; /* Ensure image does not exceed container height */
+  width: auto; /* Maintain aspect ratio */
+}
+
+.register-error {
+  @apply text-red-500 text-sm mt-1; /* Adjust as needed for spacing */
+}
+.google-login-button {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  background-color: #4285F4;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+}
+
+.google-login-button:hover {
+  background-color: #357AE8;
+}
