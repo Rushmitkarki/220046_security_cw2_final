@@ -13,49 +13,46 @@ const Navbar = () => {
 
   const handleButtonClick = () => {
     setIsClicked(!isClicked);
-    navigate('/login');
+    navigate("/login");
   };
 
   const location = useLocation();
 
-  // Do not render the Navbar on login, register, admin dashboard, and any update product pages
+  // Do not render the Navbar on certain pages
   if (
     location.pathname === "/login" ||
     location.pathname === "/register" ||
     location.pathname === "/admin/dashboard" ||
-   
-    location.pathname ==="/profile"||
-    
-    location.pathname.match(/^\/admin\/update\/.*/)||
+    location.pathname === "/profile" ||
+    location.pathname.match(/^\/admin\/update\/.*/) ||
     location.pathname.match(/^\/product\/.*/) ||
     location.pathname.match(/^\/tyre-age-calculator/) ||
-    location.pathname.match(/^\/placeorder/) 
-    
+    location.pathname.match(/^\/placeorder/)
   ) {
     return null;
   } else {
     return (
-      <nav className="bg-red-600 rounded-lg shadow-lg">
-        {/* Set background color to rgb(255, 45, 45) */}
+      <nav className="bg-white rounded-lg shadow-lg">
+        {/* Set background color to white and text color to black */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <a href="/" className="text-white text-2xl font-bold">
-                  WeWheels
+                <a href="/" className="text-black text-2xl font-bold">
+                  falcom
                 </a>
               </div>
               <div className="hidden md:block">
                 <div className="ml-10 flex items-baseline space-x-4">
                   <a
                     href="/"
-                    className="text-gray-300 hover:bg-zinc-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
+                    className="text-black hover:bg-gray-200 hover:text-black px-3 py-2 rounded-md text-sm font-medium"
                   >
                     Home
                   </a>
                   <a
                     href="/about"
-                    className="text-gray-300 hover:bg-zinc-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
+                    className="text-black hover:bg-gray-200 hover:text-black px-3 py-2 rounded-md text-sm font-medium"
                   >
                     About Us
                   </a>
@@ -67,8 +64,8 @@ const Navbar = () => {
                 onClick={handleButtonClick}
                 className={`px-4 py-2 rounded-md text-sm font-medium ${
                   isClicked
-                    ? "bg-lime-500 text-white"
-                    : "bg-white text-red-600 hover:bg-red-600 hover:text-lime-500 hover:border-transparent"
+                    ? "bg-gray-800 text-white"
+                    : "bg-black text-white hover:bg-gray-800 hover:text-white"
                 }`}
               >
                 Get Started
@@ -77,7 +74,7 @@ const Navbar = () => {
             <div className="-mr-2 flex md:hidden">
               <button
                 onClick={toggleNavbar}
-                className="bg-gray-900 text-gray-400 inline-flex items-center justify-center p-2 rounded-md hover:text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white"
+                className="bg-gray-200 text-black inline-flex items-center justify-center p-2 rounded-md hover:text-black hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-200 focus:ring-black"
               >
                 <span className="sr-only">Open main menu</span>
                 <svg
@@ -112,20 +109,20 @@ const Navbar = () => {
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
             <a
               href="/"
-              className="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium"
+              className="text-black hover:bg-gray-200 hover:text-black block px-3 py-2 rounded-md text-base font-medium"
             >
               Home
             </a>
             <a
               href="/about"
-              className="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium"
+              className="text-black hover:bg-gray-200 hover:text-black block px-3 py-2 rounded-md text-base font-medium"
             >
               About Us
             </a>
             <button
               onClick={handleButtonClick}
-              className={`block w-full text-left bg-white text-red-600 px-3 py-2 rounded-md text-base font-medium hover:bg-red-600 hover:text-white hover:border-transparent ${
-                isClicked ? "bg-red-600 text-white" : ""
+              className={`block w-full text-left bg-black text-white px-3 py-2 rounded-md text-base font-medium hover:bg-gray-800 hover:text-white ${
+                isClicked ? "bg-gray-800 text-white" : ""
               }`}
             >
               Get Started
