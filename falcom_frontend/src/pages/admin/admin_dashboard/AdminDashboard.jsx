@@ -1,5 +1,3 @@
-
-
 // import React, { useEffect, useState } from "react";
 // import { Link, useNavigate } from "react-router-dom";
 // import { toast } from "react-toastify";
@@ -348,6 +346,23 @@
 //               Here you can add any additional admin functionalities or
 //               information.
 //             </p>
+//             <ul
+//               className={`list-decimal ${
+//                 isDarkMode ? "text-gray-300" : "text-gray-600"
+//               } mb-6 ml-6`}
+//             >
+//               <li>Manage product listings including add, edit, and delete.</li>
+//               <li>View and manage customer orders.</li>
+//               <li>Update product inventory and monitor stock levels.</li>
+//               <li>Set product pricing and promotional discounts.</li>
+//               <li>Generate sales and performance reports.</li>
+//               <li>Handle customer inquiries and feedback.</li>
+//               <li>Ensure website security and user data protection.</li>
+//               <li>Monitor website traffic and user behavior analytics.</li>
+//               <li>Collaborate with marketing for promotional strategies.</li>
+//               <li>Manage and assign roles to other admin users.</li>
+//               <li>Stay updated with e-commerce trends and technologies.</li>
+//             </ul>
 //             <button
 //               onClick={handleLogout}
 //               className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded transition-colors duration-200"
@@ -679,7 +694,6 @@
 
 // export default AdminDashboard;
 
-
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -689,7 +703,7 @@ import {
   getAllProductsApi,
 } from "../../../apis/Api";
 import backgroundImage from "../../../assets/images/cliptire.png";
-import ViewOrder from "./viewOrder"; // Importing the ViewOrder component
+import ViewOrder from "./viewOrder";
 
 const AdminDashboard = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -834,7 +848,6 @@ const AdminDashboard = () => {
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
-
     navigate("/login");
     toast.success("Logged out successfully");
   };
@@ -845,22 +858,24 @@ const AdminDashboard = () => {
         isDarkMode ? "bg-[#211e21] text-white" : "bg-gray-100 text-gray-800"
       }`}
     >
-      <nav
-        className={`${
-          isDarkMode ? "bg-[#211e21]" : "bg-red-600"
-        } text-white shadow-lg`}
-      >
+      <nav className={`${isDarkMode ? "bg-[#211e21]" : "bg-white"} shadow-lg`}>
         <div className="container mx-auto px-4 py-6 flex justify-between items-center">
-          <h1 className="text-4xl font-bold">Admin Dashboard</h1>
+          <h1
+            className={`text-4xl font-bold ${
+              isDarkMode ? "text-white" : "text-gray-800"
+            }`}
+          >
+            Admin Dashboard
+          </h1>
           <div className="flex items-center">
             <span
-              className={`mr-3 ${isDarkMode ? "text-white" : "text-white"}`}
+              className={`mr-3 ${isDarkMode ? "text-white" : "text-gray-800"}`}
             >
               {isDarkMode ? "Dark" : "Light"}
             </span>
             <div
               className={`w-14 h-7 flex items-center ${
-                isDarkMode ? "bg-red-600" : "bg-[#211e21]"
+                isDarkMode ? "bg-white" : "bg-[#211e21]"
               } rounded-full p-1 cursor-pointer`}
               onClick={toggleTheme}
             >
@@ -883,11 +898,11 @@ const AdminDashboard = () => {
                 className={`px-6 py-3 font-semibold rounded-lg transition-colors duration-200 ${
                   activeTab === tab
                     ? isDarkMode
-                      ? "bg-red-600 text-white"
-                      : "bg-[#211e21] text-white"
+                      ? "bg-white text-gray-800"
+                      : "bg-white text-gray-800"
                     : isDarkMode
                     ? "bg-[#211e21] text-white hover:bg-gray-800"
-                    : "bg-white text-[#211e21] hover:bg-gray-100"
+                    : "bg-white text-gray-800 hover:bg-gray-100"
                 }`}
                 onClick={() => setActiveTab(tab)}
               >
@@ -911,7 +926,7 @@ const AdminDashboard = () => {
             </h2>
             <button
               type="button"
-              className="w-40 h-40 text-8xl bg-red-600 hover:bg-red-700 text-white rounded-full shadow-lg transition-transform duration-200 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-red-300"
+              className="w-40 h-40 text-8xl bg-white hover:bg-gray-100 text-gray-800 rounded-full shadow-lg transition-transform duration-200 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-gray-300"
               data-bs-toggle="modal"
               data-bs-target="#exampleModal"
               style={{
@@ -935,7 +950,7 @@ const AdminDashboard = () => {
                 className={`${
                   isDarkMode
                     ? "bg-gray-700 text-white"
-                    : "bg-gray-200 text-gray-700"
+                    : "bg-white text-gray-700"
                 }`}
               >
                 <tr>
@@ -979,13 +994,13 @@ const AdminDashboard = () => {
                     <td className="px-6 py-4">
                       <Link
                         to={"/admin/update/" + product._id}
-                        className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded mr-2"
+                        className="bg-white hover:bg-gray-100 text-gray-800 font-bold py-2 px-4 rounded mr-2"
                       >
                         Edit
                       </Link>
                       <button
                         type="button"
-                        className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded"
+                        className="bg-white hover:bg-gray-100 text-gray-800 font-bold py-2 px-4 rounded"
                         onClick={() => handleDeleteClick(product._id)}
                       >
                         Delete
@@ -1004,9 +1019,10 @@ const AdminDashboard = () => {
               isDarkMode ? "bg-gray-800" : "bg-white"
             } shadow-md rounded-lg overflow-hidden`}
           >
-            <ViewOrder /> {/* Render ViewOrder component here */}
+            <ViewOrder />
           </div>
         )}
+
         {activeTab === "your-panel" && (
           <div
             className={`${
@@ -1047,7 +1063,7 @@ const AdminDashboard = () => {
             </ul>
             <button
               onClick={handleLogout}
-              className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded transition-colors duration-200"
+              className="bg-white hover:bg-gray-100 text-gray-800 font-bold py-2 px-4 rounded transition-colors duration-200"
             >
               Logout
             </button>
@@ -1071,7 +1087,7 @@ const AdminDashboard = () => {
           >
             <div
               className={`modal-header ${
-                isDarkMode ? "bg-gray-700" : "bg-gray-100"
+                isDarkMode ? "bg-gray-700" : "bg-white"
               } p-4 border-b ${
                 isDarkMode ? "border-gray-600" : "border-gray-200"
               }`}
@@ -1109,7 +1125,9 @@ const AdminDashboard = () => {
                   <input
                     type="text"
                     className={`shadow appearance-none border rounded w-full py-2 px-3 ${
-                      isDarkMode ? "text-white bg-gray-700" : "text-gray-700"
+                      isDarkMode
+                        ? "text-white bg-gray-700"
+                        : "text-gray-700 bg-white"
                     } leading-tight focus:outline-none focus:shadow-outline`}
                     id="productName"
                     value={productName}
@@ -1132,7 +1150,9 @@ const AdminDashboard = () => {
                   </label>
                   <textarea
                     className={`shadow appearance-none border rounded w-full py-2 px-3 ${
-                      isDarkMode ? "text-white bg-gray-700" : "text-gray-700"
+                      isDarkMode
+                        ? "text-white bg-gray-700"
+                        : "text-gray-700 bg-white"
                     } leading-tight focus:outline-none focus:shadow-outline`}
                     id="productDescription"
                     rows="3"
@@ -1158,7 +1178,9 @@ const AdminDashboard = () => {
                   <input
                     type="number"
                     className={`shadow appearance-none border rounded w-full py-2 px-3 ${
-                      isDarkMode ? "text-white bg-gray-700" : "text-gray-700"
+                      isDarkMode
+                        ? "text-white bg-gray-700"
+                        : "text-gray-700 bg-white"
                     } leading-tight focus:outline-none focus:shadow-outline`}
                     id="productQuantity"
                     value={productQuantity}
@@ -1183,7 +1205,9 @@ const AdminDashboard = () => {
                   <input
                     type="text"
                     className={`shadow appearance-none border rounded w-full py-2 px-3 ${
-                      isDarkMode ? "text-white bg-gray-700" : "text-gray-700"
+                      isDarkMode
+                        ? "text-white bg-gray-700"
+                        : "text-gray-700 bg-white"
                     } leading-tight focus:outline-none focus:shadow-outline`}
                     id="productPrice"
                     value={productPrice}
@@ -1195,6 +1219,7 @@ const AdminDashboard = () => {
                     </p>
                   )}
                 </div>
+
                 <div className="mb-4">
                   <label
                     htmlFor="productCategory"
@@ -1206,7 +1231,9 @@ const AdminDashboard = () => {
                   </label>
                   <select
                     className={`shadow appearance-none border rounded w-full py-2 px-3 ${
-                      isDarkMode ? "text-white bg-gray-700" : "text-gray-700"
+                      isDarkMode
+                        ? "text-white bg-gray-700"
+                        : "text-gray-700 bg-white"
                     } leading-tight focus:outline-none focus:shadow-outline`}
                     id="productCategory"
                     value={productCategory}
@@ -1228,6 +1255,7 @@ const AdminDashboard = () => {
                     </p>
                   )}
                 </div>
+
                 <div className="mb-4">
                   <label
                     htmlFor="productImage"
@@ -1240,7 +1268,9 @@ const AdminDashboard = () => {
                   <input
                     type="file"
                     className={`shadow appearance-none border rounded w-full py-2 px-3 ${
-                      isDarkMode ? "text-white bg-gray-700" : "text-gray-700"
+                      isDarkMode
+                        ? "text-white bg-gray-700"
+                        : "text-gray-700 bg-white"
                     } leading-tight focus:outline-none focus:shadow-outline`}
                     id="productImage"
                     onChange={handleImageChange}
@@ -1251,6 +1281,7 @@ const AdminDashboard = () => {
                     </p>
                   )}
                 </div>
+
                 {previewImage && (
                   <div className="mb-4">
                     <img
@@ -1260,21 +1291,18 @@ const AdminDashboard = () => {
                     />
                   </div>
                 )}
+
                 <div className="flex justify-end">
                   <button
                     type="button"
-                    className={`${
-                      isDarkMode
-                        ? "bg-gray-600 hover:bg-gray-700"
-                        : "bg-gray-300 hover:bg-gray-400"
-                    } text-white font-bold py-2 px-4 rounded mr-2`}
+                    className="bg-white hover:bg-gray-100 text-gray-800 font-bold py-2 px-4 rounded mr-2"
                     data-bs-dismiss="modal"
                   >
                     Close
                   </button>
                   <button
                     type="submit"
-                    className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
+                    className="bg-white hover:bg-gray-100 text-gray-800 font-bold py-2 px-4 rounded"
                   >
                     Save changes
                   </button>
@@ -1346,7 +1374,7 @@ const AdminDashboard = () => {
             >
               <button
                 type="button"
-                className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm"
+                className="bg-white hover:bg-gray-100 text-gray-800 w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 text-base font-medium sm:ml-3 sm:w-auto sm:text-sm"
                 onClick={handleDeleteConfirm}
               >
                 Delete
@@ -1357,11 +1385,7 @@ const AdminDashboard = () => {
                   isDarkMode
                     ? "border-gray-500 hover:bg-gray-600"
                     : "border-gray-300 hover:bg-gray-50"
-                } shadow-sm px-4 py-2 ${
-                  isDarkMode
-                    ? "bg-gray-700 text-white"
-                    : "bg-white text-gray-700"
-                } text-base font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm`}
+                } shadow-sm px-4 py-2 bg-white text-gray-800 text-base font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm`}
                 onClick={() => setProductIdToDelete(null)}
               >
                 Cancel
@@ -1375,4 +1399,3 @@ const AdminDashboard = () => {
 };
 
 export default AdminDashboard;
-
