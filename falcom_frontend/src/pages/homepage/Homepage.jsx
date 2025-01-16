@@ -35,8 +35,6 @@ const HomePage = () => {
       className="flex flex-col items-center justify-center min-h-screen text-gray-100"
       style={{ backgroundColor: "hsl(0, 0%, 13%)" }}
     >
-      <Navbar />
-
       {/* Video Container */}
       <div
         className="container mx-auto mt-20 bg-transparent rounded-lg overflow-hidden shadow-2xl"

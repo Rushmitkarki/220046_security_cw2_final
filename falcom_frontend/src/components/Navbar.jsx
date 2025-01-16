@@ -38,14 +38,14 @@ const Navbar = () => {
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <a href="/" className="text-black text-2xl font-bold">
+                <a href="/homepage" className="text-black text-2xl font-bold">
                   falcom
                 </a>
               </div>
               <div className="hidden md:block">
                 <div className="ml-10 flex items-baseline space-x-4">
                   <a
-                    href="/"
+                    href="/homepage"
                     className="text-black hover:bg-gray-200 hover:text-black px-3 py-2 rounded-md text-sm font-medium"
                   >
                     Home

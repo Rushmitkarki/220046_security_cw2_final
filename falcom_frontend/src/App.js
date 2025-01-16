@@ -20,7 +20,7 @@ import PlaceOrder from "./pages/order/PlaceOrder";
 import ViewOrder from "./pages/admin/admin_dashboard/viewOrder";
 
 const AppRoutes = () => {
-  usePreventBackToLogin(); // This hook is now called within a Router context
+  usePreventBackToLogin();
 
   return (
     <>

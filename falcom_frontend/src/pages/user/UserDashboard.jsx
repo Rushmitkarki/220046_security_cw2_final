@@ -1,17 +1,13 @@
-
-
-
-
 import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { getProductCount, pagination, searchProductsApi } from "../../apis/Api";
-import bestpriceImage from '../../assets/images/bestprice.png';
-import toptierImage from '../../assets/images/toptier.png';
-import logImage from '../../assets/images/lambofgod.png';
+import bestpriceImage from "../../assets/images/bestprice.png";
+import toptierImage from "../../assets/images/toptier.png";
+import logImage from "../../assets/images/lambofgod.png";
 import ProductCard from "../../components/ProductCard";
 import Cart from "./Cart";
-import TyreAgeCalculator from './TyreAgeCalculator';
-import EditProfile from './EditProfile';
+import TyreAgeCalculator from "./TyreAgeCalculator";
+import EditProfile from "./EditProfile";
 import {
   FaShoppingCart,
   FaDollarSign,
@@ -27,7 +23,9 @@ const Profile = () => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [activeTab, setActiveTab] = useState("shopNow");
-  const [searchQuery, setSearchQuery] = useState(new URLSearchParams(location.search).get('search') || '');
+  const [searchQuery, setSearchQuery] = useState(
+    new URLSearchParams(location.search).get("search") || ""
+  );
 
   useEffect(() => {
     if (activeTab === "shopNow") {
@@ -35,7 +33,7 @@ const Profile = () => {
         searchProductsApi(searchQuery)
           .then((res) => {
             setProducts(res.data.products);
-            setTotalPages(1); // Assuming search results are less and can fit on one page
+            setTotalPages(1);
           })
           .catch((err) => {
             setError(err.response.data.message);
@@ -44,7 +42,7 @@ const Profile = () => {
         getProductCount()
           .then((res) => {
             const count = res.data.productCount;
-            setTotalPages(Math.ceil(count / 8)); // Adjusted for 8 products per page
+            setTotalPages(Math.ceil(count / 8));
           })
           .catch((err) => {
             setError(err.response.data.message);
@@ -80,7 +78,7 @@ const Profile = () => {
   return (
     <>
       <div className="container mx-auto p-4">
-        <h1 className="text-3xl font-bold mb-4 text-white">WeWheels</h1>
+        <h1 className="text-3xl font-bold mb-4 text-white">falcom</h1>
 
         {/* Tabs */}
         <div className="mb-4">
@@ -383,6 +381,3 @@ const Profile = () => {
 };
 
 export default Profile;
-
-
-
