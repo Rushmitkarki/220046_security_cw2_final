@@ -15,16 +15,19 @@ router.get("/current", userController.getCurrentUser);
 // get me
 router.get("/getMe", authGuard, userController.getMe);
 
-router.post('/forgot_password', userController.forgotPassword);
- 
+router.post("/forgot_password", userController.forgotPassword);
+
 // verify otp and reset password
-router.post('/verify_otp', userController.verifyOtpAndResetPassword)
+router.post("/verify_otp", userController.verifyOtpAndResetPassword);
 
 // upload profile picture
-router.post('/profile_picture',userController.uploadProfilePicture);
+router.post("/profile_picture", userController.uploadProfilePicture);
 
 // update user details
-router.put('/update', authGuard, userController.editUserProfile);
+router.put("/update", authGuard, userController.editUserProfile);
+
+// verify registration otp
+router.post("/verify_registration_otp", userController.verifyRegistrationOtp);
 
 //google
 router.post("/googleLogin", userController.googleLogin);

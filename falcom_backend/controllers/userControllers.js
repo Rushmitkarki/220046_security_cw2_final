@@ -11,10 +11,8 @@ const User = require("../models/userModel");
 const { OAuth2Client } = require("google-auth-library");
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const axios = require("axios");
-
+const { sendRegisterOtp } = require("../service/sendEmailOtp");
 const createUser = async (req, res) => {
-  console.log(req.body);
-
   const { firstName, lastName, userName, email, phoneNumber, password } =
     req.body;
 
@@ -27,44 +25,120 @@ const createUser = async (req, res) => {
     !password
   ) {
     return res.json({
-      sucess: false,
-      message: "Plz enter all details!",
+      success: false,
+      message: "Please enter all details!",
     });
   }
 
   try {
-    const existingUser = await userModel.findOne({ email: email });
+    const existingUser = await userModel.findOne({ email });
 
     if (existingUser) {
       return res.json({
-        status: false,
-        message: "User Already Exist!",
+        success: false,
+        message: "User already exists!",
       });
     }
 
-    const randomSalt = await bcrypt.genSalt(10);
-    const hasedPassword = await bcrypt.hash(password, randomSalt);
+    // Generate OTP
+    const otp = Math.floor(100000 + Math.random() * 900000);
+    console.log(`Generated OTP: ${otp}`); // Log the OTP
 
+    // Save OTP in user model
+    const otpExpires = Date.now() + 10 * 60 * 1000; // OTP valid for 10 minutes
     const newUser = new userModel({
-      firstName: firstName,
-      lastName: lastName,
-      userName: userName,
-      email: email,
-      phoneNumber: phoneNumber,
-      password: hasedPassword,
+      firstName,
+      lastName,
+      userName,
+      email,
+      phoneNumber,
+      password, // Password will be hashed after OTP verification
+      resetPasswordOTP: otp,
+      resetPasswordExpires: otpExpires,
+      isVerified: false,
     });
 
     await newUser.save();
 
+    // Send OTP to user's email
+    console.log(`Sending OTP to email: ${email}`); // Log email
+    await sendRegisterOtp(email, otp);
+
     res.json({
-      sucess: true,
-      message: "User Created Sucesfully",
+      success: true,
+      message: "User registered successfully! OTP sent to your email.",
     });
   } catch (error) {
-    console.log(error);
-    res.json({
-      sucess: false,
-      message: "Internal Server Error!",
+    console.error("Error in createUser:", error.message);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error!",
+    });
+  }
+};
+
+const verifyRegistrationOtp = async (req, res) => {
+  const { email, otp, password } = req.body;
+
+  if (!email || !otp || !password) {
+    return res.status(400).json({
+      success: false,
+      message: "Please provide email, OTP, and password.",
+    });
+  }
+
+  try {
+    const user = await userModel.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found!",
+      });
+    }
+
+    if (user.isVerified) {
+      return res.status(400).json({
+        success: false,
+        message: "User is already verified!",
+      });
+    }
+
+    // Check OTP validity
+    if (user.resetPasswordOTP !== otp) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid OTP!",
+      });
+    }
+
+    if (user.resetPasswordExpires < Date.now()) {
+      return res.status(400).json({
+        success: false,
+        message: "OTP has expired!",
+      });
+    }
+
+    // Hash the password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    // Update user details and set as verified
+    user.password = hashedPassword;
+    user.isVerified = true;
+    user.resetPasswordOTP = null;
+    user.resetPasswordExpires = null;
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: "User verified and registered successfully!",
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error!",
     });
   }
 };
@@ -221,57 +295,39 @@ const getUserByGoogleEmail = async (req, res) => {
 };
 
 const loginUser = async (req, res) => {
-  console.log(req.body);
+  const { email, password, captchaToken } = req.body;
 
-  const { email, password } = req.body;
-
-  if (!email || !password) {
+  if (!email || !password || !captchaToken) {
     return res.json({
-      sucess: false,
-      message: "Please enter all the fields",
+      success: false,
+      message: "Please fill in all fields, including the captcha.",
     });
   }
 
   try {
-    const user = await userModel.findOne({ email: email });
+    const user = await userModel.findOne({ email });
 
     if (!user) {
       return res.json({
-        sucess: false,
-        message: "Email Doesnt Exist !",
+        success: false,
+        message: "Email does not exist!",
       });
     }
 
-    const isValidPassword = await bcrypt.compare(password, user.password);
-
-    if (!isValidPassword) {
-      return res.json({
-        sucess: false,
-        message: "Password Doesnt Matched !",
+    if (!user.isVerified) {
+      return res.status(403).json({
+        success: false,
+        message:
+          "User is not verified. Please complete OTP verification first.",
       });
     }
 
-    console.log(user);
-
-    const token = await jwt.sign(
-      {
-        id: user._id,
-        isAdmin: user.isAdmin,
-      },
-      process.env.JWT_SECRET
-    );
-
-    res.json({
-      success: true,
-      message: "User Logined Sucessfully !",
-      token: token,
-      userData: user,
-    });
+    // Remaining login logic (e.g., check password, captcha, etc.)
   } catch (error) {
-    console.log(error);
-    return res.json({
-      sucess: false,
-      message: "Internal Server Error",
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error!",
     });
   }
 };
@@ -343,53 +399,49 @@ const getMe = async (req, res) => {
 };
 
 const forgotPassword = async (req, res) => {
-  const { phoneNumber } = req.body;
+  const { email } = req.body;
 
-  if (!phoneNumber) {
+  if (!email) {
     return res.status(400).json({
       success: false,
-      message: "Please enter your phone number",
+      message: "Please provide an email.",
     });
   }
+
   try {
-    // finding user by phone number
-    const user = await userModel.findOne({ phoneNumber: phoneNumber });
+    const user = await userModel.findOne({ email });
     if (!user) {
-      return res.status(400).json({
+      return res.status(404).json({
         success: false,
-        message: "User not found",
+        message: "User not found!",
       });
     }
 
-    // Generate OTP random 6 digit number
+    if (user.otpBlockExpires && Date.now() < user.otpBlockExpires) {
+      return res.status(403).json({
+        success: false,
+        message: `OTP requests are blocked. Try again after ${Math.ceil(
+          (user.otpBlockExpires - Date.now()) / 60000
+        )} minutes.`,
+      });
+    }
+
     const otp = Math.floor(100000 + Math.random() * 900000);
-    // generate expiry time for OTP
-    const expiry = Date.now() + 10 * 60 * 1000;
-    // save to database for verification
+    await sendOtp(email, otp); // Replace with your actual email sending service logic
     user.resetPasswordOTP = otp;
-    user.resetPasswordExpires = expiry;
+    user.resetPasswordExpires = Date.now() + 10 * 60 * 1000; // OTP valid for 10 minutes
+    user.otpBlockExpires = Date.now() + 10 * 60 * 1000; // Block OTP requests for 10 minutes
     await user.save();
-    // set expiry time for OTP
 
-    // send OTP to registered phone number
-    const isSent = await sendOtp(phoneNumber, otp);
-    if (isSent) {
-      return res.status(400).json({
-        sucess: false,
-        message: "Error sending OTP",
-      });
-    }
-
-    //If sucess
     res.status(200).json({
-      sucess: true,
-      message: "OTP send sucesfully",
+      success: true,
+      message: "OTP sent successfully to your email!",
     });
   } catch (error) {
-    console.log(error);
-    return res.status(500).json({
+    console.error(error);
+    res.status(500).json({
       success: false,
-      message: "Internal server error",
+      message: "Internal server error!",
     });
   }
 };
@@ -538,4 +590,5 @@ module.exports = {
   editUserProfile,
   googleLogin,
   getUserByGoogleEmail,
+  verifyRegistrationOtp,
 };

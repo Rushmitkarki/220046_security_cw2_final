@@ -1,5 +1,3 @@
-
-
 import axios from "axios";
 
 // Creating backend config
@@ -88,7 +86,7 @@ export const removeFromCartApi = (id) =>
   Api.delete(`/api/cart/remove_from_cart/${id}`, config);
 
 // update quantity in cart api
-export const updateQuantityApi = ( data) =>
+export const updateQuantityApi = (data) =>
   Api.put(`/api/cart/update_quantity`, data, config);
 
 // update cart status
@@ -117,22 +115,23 @@ export const getAverageRatingApi = (ProductId) =>
 export const updateReviewApi = (id, data) =>
   Api.put(`/api/review/update_reviews/${id}`, data, config);
 
-
 // google login
 export const googleLoginApi = (data) => Api.post("/api/user/googleLogin", data);
- 
+
 // get by email
 export const getUserByGoogleEmail = (data) =>
   Api.post(`/api/user/getUserByGoogle`, data);
 
 // get current user api
-export const getCurrentUserApi = () => Api.get('/api/user/current',config)
- 
+export const getCurrentUserApi = () => Api.get("/api/user/current", config);
+
 // edit user profile api
-export const editUserProfileApi = (data) => Api.put('/api/user/update',data,config)
- 
+export const editUserProfileApi = (data) =>
+  Api.put("/api/user/update", data, config);
+
 //Upload Profile Picture Api
-export const uploadProfilePictureApi = (data) => Api.post('/api/user/profile_picture',data)
+export const uploadProfilePictureApi = (data) =>
+  Api.post("/api/user/profile_picture", data);
 
 //=========================== Order Apis ===========================
 //place order api
@@ -144,13 +143,15 @@ export const getSingleOrderApi = (id) =>
   Api.get(`/api/order/get_single_order/${id}`, config);
 
 // get all orders api
-export const getAllOrdersApi = () => Api.get("/api/order/get_all_orders", config);
+export const getAllOrdersApi = () =>
+  Api.get("/api/order/get_all_orders", config);
 
 // order status update api
 export const updateOrderStatusApi = (id, data) =>
   Api.post(`/api/order/update_order_status/${id}`, data, config);
 
-export const updateStatusApi = () => Api.put(`/api/cart/update_status`, '', config);
+export const updateStatusApi = () =>
+  Api.put(`/api/cart/update_status`, "", config);
 
 // get orders by user api
 export const getOrdersByUserApi = () =>
@@ -164,7 +165,6 @@ export const initializeKhaltiPaymentApi = (data) =>
 export const verifyKhaltiPaymentApi = (params) =>
   Api.get("/api/khalti/complete-khalti-payment", { params });
 
-
 const KhaltiApi = axios.create({
   baseURL: "https://test-pay.khalti.com/",
   headers: {
@@ -176,4 +176,6 @@ const KhaltiApi = axios.create({
 export const initiateKhaltiPayment = (data) =>
   KhaltiApi.post("api/v2/epayment/initiate/", data);
 
-
+// verfy the registerotp
+export const verifyRegistrationOtpApi = (data) =>
+  Api.post("/api/user/verify_registration_otp", data);
