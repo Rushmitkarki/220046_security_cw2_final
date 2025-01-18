@@ -1,12 +1,12 @@
 const router = require("express").Router();
 const userController = require("../controllers/userControllers");
-const { authGuard } = require("../middleware/authGuard");
+const { authGuard, verifyRecaptcha } = require("../middleware/authGuard");
 
 // Creating user registration route
 router.post("/create", userController.createUser);
 
 // Creating user login route
-router.post("/login", userController.loginUser);
+router.post("/login", verifyRecaptcha, userController.loginUser);
 
 // current user
 

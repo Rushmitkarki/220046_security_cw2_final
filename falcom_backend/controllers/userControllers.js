@@ -295,9 +295,9 @@ const getUserByGoogleEmail = async (req, res) => {
 };
 
 const loginUser = async (req, res) => {
-  const { email, password, captchaToken } = req.body;
+  const { email, password } = req.body;
 
-  if (!email || !password || !captchaToken) {
+  if (!email || !password) {
     return res.json({
       success: false,
       message: "Please fill in all fields, including the captcha.",

@@ -21,6 +21,7 @@ const Login = () => {
   const [role, setRole] = useState("");
   const [showModal, setShowModal] = useState(false);
   const navigate = useNavigate();
+  const [captchaToken, setCaptchaToken] = useState("");
 
   const validation = () => {
     let isValid = true;
@@ -52,12 +53,17 @@ const Login = () => {
     const data = {
       email: email,
       password: password,
+      captchaToken: captchaToken,
     };
 
     loginUserApi(data)
       .then((res) => {
-        if (res.data.success === false) {
-          toast.error("Unable to locate your account");
+        if (!res.data.success) {
+          if (res.status === 403) {
+            toast.error(res.data.message);
+          } else {
+            toast.error("verfy your otp first or retyped your password");
+          }
         } else {
           toast.success(res.data.message);
           localStorage.setItem("token", res.data.token);
@@ -77,6 +83,10 @@ const Login = () => {
         console.error("Error:", error);
         toast.error("Unable to locate your account");
       });
+  };
+
+  const onCaptchaVerify = (captchaResponse) => {
+    setCaptchaToken(captchaResponse); // Store the captcha token when verified
   };
 
   const handleGoogleLogin = () => {
@@ -127,6 +137,13 @@ const Login = () => {
               />
               {passwordError && <p className="login-error">{passwordError}</p>}
             </div>
+            <div className="captcha-container">
+              <GoogleLogin
+                onSuccess={(response) => onCaptchaVerify(response.credential)}
+                onError={() => toast.error("Captcha verification failed")}
+              />
+            </div>
+
             <button type="submit" className="login-button">
               Login
             </button>

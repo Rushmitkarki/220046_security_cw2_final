@@ -133,3 +133,8 @@
 .google-login-button:hover {
   background-color: #357AE8;
 }
+.captcha-container {
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+}
