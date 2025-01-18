@@ -295,43 +295,60 @@ const getUserByGoogleEmail = async (req, res) => {
 };
 
 const loginUser = async (req, res) => {
+  console.log(req.body);
+
   const { email, password } = req.body;
 
   if (!email || !password) {
     return res.json({
-      success: false,
-      message: "Please fill in all fields, including the captcha.",
+      sucess: false,
+      message: "Please enter all the fields",
     });
   }
 
   try {
-    const user = await userModel.findOne({ email });
+    const user = await userModel.findOne({ email: email });
 
     if (!user) {
       return res.json({
-        success: false,
-        message: "Email does not exist!",
+        sucess: false,
+        message: "Email Doesnt Exist !",
       });
     }
 
-    if (!user.isVerified) {
-      return res.status(403).json({
-        success: false,
-        message:
-          "User is not verified. Please complete OTP verification first.",
+    const isValidPassword = await bcrypt.compare(password, user.password);
+
+    if (!isValidPassword) {
+      return res.json({
+        sucess: false,
+        message: "Password Doesnt Matched !",
       });
     }
 
-    // Remaining login logic (e.g., check password, captcha, etc.)
+    console.log(user);
+
+    const token = await jwt.sign(
+      {
+        id: user._id,
+        isAdmin: user.isAdmin,
+      },
+      process.env.JWT_SECRET
+    );
+
+    res.json({
+      success: true,
+      message: "User Logined Sucessfully !",
+      token: token,
+      userData: user,
+    });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      success: false,
-      message: "Internal server error!",
+    console.log(error);
+    return res.json({
+      sucess: false,
+      message: "Internal Server Error",
     });
   }
 };
-
 // get current user
 
 const getCurrentUser = async (req, res) => {

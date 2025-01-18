@@ -1,5 +1,8 @@
 const userModel = require("../models/userModel");
 const jwt = require("jsonwebtoken");
+const axios = require("axios");
+const { StatusCodes } = require("http-status-codes");
+
 const authGuard = async (req, res, next) => {
   //check incoming data
   console.log(req.headers); // passed going to next
@@ -118,7 +121,7 @@ const verifyRecaptcha = async (req, res, next) => {
   if (!recaptchaResponse) {
     return res.status(httpStatus.BAD_REQUEST).json({
       success: false,
-      message: "reCAPTCHA response is required",
+      message: "reCAPTCHA token not found",
     });
   }
 
@@ -157,6 +160,6 @@ const verifyRecaptcha = async (req, res, next) => {
 module.exports = {
   authGuard,
   adminGuard,
-  forgotPasswordLimiter,
+
   verifyRecaptcha,
 };

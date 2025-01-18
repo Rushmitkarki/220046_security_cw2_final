@@ -6,7 +6,7 @@ const { authGuard, verifyRecaptcha } = require("../middleware/authGuard");
 router.post("/create", userController.createUser);
 
 // Creating user login route
-router.post("/login", verifyRecaptcha, userController.loginUser);
+router.post("/login", userController.loginUser);
 
 // current user
 
