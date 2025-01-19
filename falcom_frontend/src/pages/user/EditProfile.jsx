@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import {
@@ -114,7 +112,7 @@ const EditProfile = () => {
                 <div className="flex-shrink-0">
                   {profile.profilePicture ? (
                     <img
-                      src={`http://localhost:5000/profile_pictures/${profile.profilePicture}`}
+                      src={`https://localhost:5000/profile_pictures/${profile.profilePicture}`}
                       alt="Profile"
                       className="h-20 w-20 rounded-full object-cover border-2 border-red-500"
                     />

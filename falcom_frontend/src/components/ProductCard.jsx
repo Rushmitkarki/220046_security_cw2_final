@@ -8,7 +8,7 @@ const ProductCard = ({ product }) => {
   const navigate = useNavigate();
 
   const handleDoubleClick = () => {
-    window.open(`http://localhost:5000/products/${product.productImage}`, '_blank');
+    window.open(`https://localhost:5000/products/${product.productImage}`, '_blank');
   };
 
   const handleViewMore = () => {
@@ -22,7 +22,7 @@ const ProductCard = ({ product }) => {
       </span>
 
       <img
-        src={`http://localhost:5000/products/${product.productImage}`}
+        src={`https://localhost:5000/products/${product.productImage}`}
         className='card-img-top'
         alt={product.productName}
         onDoubleClick={handleDoubleClick}
