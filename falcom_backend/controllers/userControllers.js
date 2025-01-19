@@ -429,6 +429,82 @@ const loginUser = async (req, res) => {
   }
 };
 
+const verifyOTP = async (req, res) => {
+  const { userId, otp } = req.body;
+
+  if (!userId || !otp) {
+    return res.status(400).json({
+      success: false,
+      message: "User ID and OTP are required!",
+    });
+  }
+
+  try {
+    // Find user and check OTP
+    const user = await userModel.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // Check if OTP exists and hasn't expired
+    if (!user.googleOTP || !user.googleOTPExpires) {
+      return res.status(400).json({
+        success: false,
+        message: "No OTP found. Please request a new one.",
+      });
+    }
+
+    // Check if OTP has expired
+    if (new Date() > user.googleOTPExpires) {
+      // Clear expired OTP
+      await userModel.findByIdAndUpdate(userId, {
+        googleOTP: null,
+        googleOTPExpires: null,
+      });
+
+      return res.status(400).json({
+        success: false,
+        message: "OTP has expired. Please request a new one.",
+      });
+    }
+
+    // Verify OTP
+    if (user.googleOTP !== otp) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid OTP. Please try again.",
+      });
+    }
+
+    // OTP is valid, generate JWT token
+    const token = jwt.sign({ id: userId }, process.env.JWT_SECRET);
+
+    // Clear the used OTP
+    await userModel.findByIdAndUpdate(userId, {
+      googleOTP: null,
+      googleOTPExpires: null,
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Login successful!",
+      token,
+      user,
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server error",
+      error: err,
+    });
+  }
+};
+
 // get current user
 
 const getCurrentUser = async (req, res) => {
@@ -679,6 +755,7 @@ const editUserProfile = async (req, res) => {
 module.exports = {
   createUser,
   loginUser,
+  verifyOTP,
   getMe,
   getCurrentUser,
   forgotPassword,

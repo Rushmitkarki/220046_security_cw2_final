@@ -8,6 +8,8 @@ router.post("/create", userController.createUser);
 // Creating user login route
 router.post("/login", userController.loginUser);
 
+router.post("/verifyOTP", userController.verifyOTP);
+
 // current user
 
 router.get("/current", userController.getCurrentUser);

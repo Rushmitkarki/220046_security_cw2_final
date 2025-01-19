@@ -7,6 +7,7 @@ import {
   getUserByGoogleEmail,
   googleLoginApi,
   loginUserApi,
+  verifyMfaCodeApi,
 } from "../../apis/Api";
 import { GoogleLogin } from "@react-oauth/google";
 import { jwtDecode } from "jwt-decode";
@@ -21,6 +22,8 @@ const Login = () => {
   const [googleId, setGoogleId] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [captchaToken, setCaptchaToken] = useState("");
+  const [showOtpModal, setShowOtpModal] = useState(false);
+  const [otp, setOtp] = useState("");
 
   const validation = () => {
     let isValid = true;
@@ -41,6 +44,26 @@ const Login = () => {
 
     return isValid;
   };
+  const handleVerifyOtp = () => {
+    const data = { email, otp };
+
+    verifyMfaCodeApi(data)
+      .then((res) => {
+        if (res.data.success) {
+          toast.success("OTP Verified Successfully");
+          setShowOtpModal(false);
+          localStorage.setItem("token", res.data.token);
+          localStorage.setItem("user", JSON.stringify(res.data.userData));
+          window.location.href = "/profile";
+        } else {
+          toast.error(res.data.message || "Failed to verify OTP");
+        }
+      })
+      .catch((error) => {
+        console.error("Error verifying OTP:", error);
+        toast.error("Error verifying OTP");
+      });
+  };
 
   const handleLogin = (e) => {
     e.preventDefault();
@@ -60,8 +83,11 @@ const Login = () => {
         if (!res.data.success) {
           if (res.status === 403) {
             toast.error(res.data.message);
+          } else if (res.data.success) {
+            toast.success(res.data.message);
+            setShowOtpModal(true); // Show OTP modal if backend requires OTP
           } else {
-            toast.error("verfy your otp first or retyped your password");
+            toast.error("Verify your OTP first or retype your password");
           }
         } else {
           toast.success(res.data.message);
@@ -71,10 +97,8 @@ const Login = () => {
 
           if (res.data.userData.isAdmin) {
             window.location.href = "/admin/dashboard";
-          } else if (!res.data.userData.isAdmin) {
-            window.location.href = "/profile";
           } else {
-            window.location.href = "/";
+            window.location.href = "/profile";
           }
         }
       })
@@ -188,7 +212,6 @@ const Login = () => {
           <img src={loginui} alt="Login" />
         </div>
       </div>
-      [4:56 PM] Kehar Ojha
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center overflow-auto bg-black bg-opacity-50">
           <div className="w-full max-w-md rounded-lg bg-white p-8">
@@ -215,6 +238,36 @@ const Login = () => {
                 className="rounded-lg bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700"
               >
                 Complete Registration
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {showOtpModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-auto bg-black bg-opacity-50">
+          <div className="w-full max-w-md rounded-lg bg-white p-8">
+            <h2 className="mb-4 text-2xl font-bold">Enter OTP</h2>
+
+            <input
+              type="text"
+              placeholder="Enter OTP"
+              className="mb-4 w-full rounded-lg border px-4 py-2 focus:ring-2 focus:ring-indigo-500"
+              value={otp}
+              onChange={(e) => setOtp(e.target.value)}
+            />
+
+            <div className="flex justify-end">
+              <button
+                onClick={() => setShowOtpModal(false)}
+                className="mr-2 px-4 py-2 text-gray-600 hover:text-gray-800"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleVerifyOtp}
+                className="rounded-lg bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700"
+              >
+                Verify OTP
               </button>
             </div>
           </div>
