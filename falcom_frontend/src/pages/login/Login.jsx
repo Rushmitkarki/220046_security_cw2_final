@@ -24,6 +24,8 @@ const Login = () => {
   const [captchaToken, setCaptchaToken] = useState("");
   const [showOtpModal, setShowOtpModal] = useState(false);
   const [otp, setOtp] = useState("");
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [userId, setUserId] = useState("");
 
   const validation = () => {
     let isValid = true;
@@ -44,8 +46,9 @@ const Login = () => {
 
     return isValid;
   };
+
   const handleVerifyOtp = () => {
-    const data = { email, otp };
+    const data = { userId, otp };
 
     verifyMfaCodeApi(data)
       .then((res) => {
@@ -80,31 +83,30 @@ const Login = () => {
 
     loginUserApi(data)
       .then((res) => {
-        if (!res.data.success) {
-          if (res.status === 403) {
-            toast.error(res.data.message);
-          } else if (res.data.success) {
-            toast.success(res.data.message);
-            setShowOtpModal(true); // Show OTP modal if backend requires OTP
-          } else {
-            toast.error("Verify your OTP first or retype your password");
-          }
-        } else {
+        if (res.data.success && res.data.requiresOtp) {
+          toast.success(
+            "OTP is required. Please enter the OTP sent to your email."
+          );
+          setUserId(res.data.userId);
+          setShowOtpModal(true);
+        } else if (res.data.success) {
           toast.success(res.data.message);
           localStorage.setItem("token", res.data.token);
-          const convertedData = JSON.stringify(res.data.userData);
-          localStorage.setItem("user", convertedData);
+          localStorage.setItem("user", JSON.stringify(res.data.userData));
 
           if (res.data.userData.isAdmin) {
             window.location.href = "/admin/dashboard";
           } else {
             window.location.href = "/profile";
           }
+        } else {
+          toast.error(res.data.message || "Failed to login. Please try again.");
         }
       })
       .catch((error) => {
         console.error("Error:", error);
-        toast.error("Unable to locate your account");
+        toast.error("Unable to locate your account.");
+        setShowOtpModal(true);
       });
   };
 
@@ -212,62 +214,28 @@ const Login = () => {
           <img src={loginui} alt="Login" />
         </div>
       </div>
-      {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-auto bg-black bg-opacity-50">
-          <div className="w-full max-w-md rounded-lg bg-white p-8">
-            <h2 className="mb-4 text-2xl font-bold">
-              Complete Your Registration
-            </h2>
 
-            <input
-              type="password"
-              placeholder="Set a password"
-              className="mb-4 w-full rounded-lg border px-4 py-2 focus:ring-2 focus:ring-indigo-500"
-              onChange={(e) => setPassword(e.target.value)}
-            />
-
-            <div className="flex justify-end">
-              <button
-                onClick={() => setShowModal(false)}
-                className="mr-2 px-4 py-2 text-gray-600 hover:text-gray-800"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleGoogleLogin}
-                className="rounded-lg bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700"
-              >
-                Complete Registration
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* OTP Modal */}
       {showOtpModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-auto bg-black bg-opacity-50">
-          <div className="w-full max-w-md rounded-lg bg-white p-8">
-            <h2 className="mb-4 text-2xl font-bold">Enter OTP</h2>
-
+        <div className="otp-modal">
+          <div className="otp-modal-content">
+            <h3>Enter OTP</h3>
             <input
               type="text"
               placeholder="Enter OTP"
-              className="mb-4 w-full rounded-lg border px-4 py-2 focus:ring-2 focus:ring-indigo-500"
               value={otp}
               onChange={(e) => setOtp(e.target.value)}
+              className="otp-input"
             />
-
-            <div className="flex justify-end">
-              <button
-                onClick={() => setShowOtpModal(false)}
-                className="mr-2 px-4 py-2 text-gray-600 hover:text-gray-800"
-              >
-                Cancel
+            <div className="otp-modal-buttons">
+              <button onClick={handleVerifyOtp} className="otp-verify-button">
+                Verify OTP
               </button>
               <button
-                onClick={handleVerifyOtp}
-                className="rounded-lg bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700"
+                onClick={() => setShowOtpModal(false)}
+                className="otp-cancel-button"
               >
-                Verify OTP
+                Cancel
               </button>
             </div>
           </div>
