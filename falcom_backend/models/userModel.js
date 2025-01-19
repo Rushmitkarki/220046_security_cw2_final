@@ -61,6 +61,14 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  googleOTP: {
+    type: String,
+    default: null,
+  },
+  googleOTPExpires: {
+    type: Date,
+    default: null,
+  },
 });
 
 const User = mongoose.model("users", userSchema);

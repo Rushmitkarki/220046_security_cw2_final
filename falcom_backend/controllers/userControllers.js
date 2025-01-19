@@ -12,6 +12,8 @@ const { OAuth2Client } = require("google-auth-library");
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const axios = require("axios");
 const { sendRegisterOtp } = require("../service/sendEmailOtp");
+const speakeasy = require("speakeasy");
+const nodemailer = require("nodemailer");
 const createUser = async (req, res) => {
   const { firstName, lastName, userName, email, phoneNumber, password } =
     req.body;
@@ -295,60 +297,138 @@ const getUserByGoogleEmail = async (req, res) => {
 };
 
 const loginUser = async (req, res) => {
-  console.log(req.body);
+  const { email, password, captchaToken } = req.body;
 
-  const { email, password } = req.body;
-
-  if (!email || !password) {
-    return res.json({
-      sucess: false,
-      message: "Please enter all the fields",
+  if (!email || !password || !captchaToken) {
+    return res.status(400).json({
+      success: false,
+      message: "All fields are required, including CAPTCHA!",
     });
   }
 
+  // Verify CAPTCHA
   try {
-    const user = await userModel.findOne({ email: email });
-
-    if (!user) {
-      return res.json({
-        sucess: false,
-        message: "Email Doesnt Exist !",
-      });
-    }
-
-    const isValidPassword = await bcrypt.compare(password, user.password);
-
-    if (!isValidPassword) {
-      return res.json({
-        sucess: false,
-        message: "Password Doesnt Matched !",
-      });
-    }
-
-    console.log(user);
-
-    const token = await jwt.sign(
+    const response = await axios.post(
+      `https://www.google.com/recaptcha/api/siteverify`,
+      null,
       {
-        id: user._id,
-        isAdmin: user.isAdmin,
-      },
-      process.env.JWT_SECRET
+        params: {
+          secret: process.env.RECAPTCHA_SECRET_KEY,
+          response: captchaToken,
+        },
+      }
     );
 
-    res.json({
-      success: true,
-      message: "User Logined Sucessfully !",
-      token: token,
-      userData: user,
+    if (!response.data.success) {
+      return res
+        .status(400)
+        .json({ success: false, message: "CAPTCHA validation failed!" });
+    }
+  } catch (err) {
+    console.error("CAPTCHA validation error:", err);
+    return res
+      .status(500)
+      .json({ success: false, message: "CAPTCHA validation error" });
+  }
+
+  // Track login attempts in-memory
+  const ip = req.ip;
+  const loginAttempts = global.loginAttempts || {};
+  const userKey = `login_attempts:${ip}`;
+  const currentAttempts = loginAttempts[userKey] || {
+    count: 0,
+    timestamp: null,
+  };
+
+  if (
+    currentAttempts.count >= 5 &&
+    currentAttempts.timestamp &&
+    Date.now() - currentAttempts.timestamp < 60 * 1000
+  ) {
+    return res.status(429).json({
+      success: false,
+      message: "Too many login attempts, please try again later.",
     });
-  } catch (error) {
-    console.log(error);
-    return res.json({
-      sucess: false,
-      message: "Internal Server Error",
+  }
+
+  // Login logic
+  try {
+    const user = await userModel.findOne({ email });
+    if (!user) {
+      loginAttempts[userKey] = {
+        count: currentAttempts.count + 1,
+        timestamp: Date.now(),
+      };
+      global.loginAttempts = loginAttempts;
+
+      return res
+        .status(400)
+        .json({ success: false, message: "User doesn't exist" });
+    }
+
+    const passwordCorrect = await bcrypt.compare(password, user.password);
+    if (!passwordCorrect) {
+      loginAttempts[userKey] = {
+        count: currentAttempts.count + 1,
+        timestamp: Date.now(),
+      };
+      global.loginAttempts = loginAttempts;
+
+      return res
+        .status(400)
+        .json({ success: false, message: "Password is incorrect" });
+    }
+
+    // Generate OTP for MFA
+    const otp = speakeasy.totp({
+      secret: process.env.OTP_SECRET + user._id,
+      encoding: "base32",
+    });
+
+    // Store OTP in database with expiration
+    const otpExpiration = new Date();
+    otpExpiration.setMinutes(otpExpiration.getMinutes() + 5); // OTP expires in 5 minutes
+
+    user.googleOTP = otp;
+    user.googleOTPExpires = otpExpiration;
+
+    await user.save();
+
+    // Send OTP via email
+    const transporter = nodemailer.createTransport({
+      service: "Gmail",
+      auth: {
+        user: process.env.EMAIL_USERNAME,
+        pass: process.env.EMAIL_PASSWORD,
+      },
+    });
+
+    await transporter.sendMail({
+      from: process.env.EMAIL_USERNAME,
+      to: user.email,
+      subject: "Your One-Time Password (OTP)",
+      text: `Your OTP for login is: ${otp}`,
+    });
+
+    // Successful login (MFA pending), reset rate limit counter for IP
+    delete loginAttempts[userKey];
+    global.loginAttempts = loginAttempts;
+
+    res.status(200).json({
+      success: true,
+      message: "OTP sent to your email. Please verify to complete login.",
+      userId: user._id,
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server error",
+      error: err,
     });
   }
 };
+
 // get current user
 
 const getCurrentUser = async (req, res) => {

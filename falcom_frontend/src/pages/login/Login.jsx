@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import loginui from "../../assets/images/loginui.png";
 import "./Login.css";
 import { Toaster, toast } from "react-hot-toast";
@@ -10,6 +10,7 @@ import {
 } from "../../apis/Api";
 import { GoogleLogin } from "@react-oauth/google";
 import { jwtDecode } from "jwt-decode";
+import ReCAPTCHA from "react-google-recaptcha";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -18,9 +19,7 @@ const Login = () => {
   const [passwordError, setPasswordError] = useState("");
   const [googleToken, setGoogleToken] = useState("");
   const [googleId, setGoogleId] = useState("");
-  const [role, setRole] = useState("");
   const [showModal, setShowModal] = useState(false);
-  const navigate = useNavigate();
   const [captchaToken, setCaptchaToken] = useState("");
 
   const validation = () => {
@@ -85,10 +84,6 @@ const Login = () => {
       });
   };
 
-  const onCaptchaVerify = (captchaResponse) => {
-    setCaptchaToken(captchaResponse); // Store the captcha token when verified
-  };
-
   const handleGoogleLogin = () => {
     googleLoginApi({ token: googleToken, googleId, password })
       .then((response) => {
@@ -137,10 +132,12 @@ const Login = () => {
               />
               {passwordError && <p className="login-error">{passwordError}</p>}
             </div>
-            <div className="captcha-container">
-              <GoogleLogin
-                onSuccess={(response) => onCaptchaVerify(response.credential)}
-                onError={() => toast.error("Captcha verification failed")}
+
+            <div className="flex justify-center mb-4">
+              <ReCAPTCHA
+                sitekey="6LeEPLwqAAAAADqgg1ftjO4z6r14-GavrPGQLpwT"
+                onChange={setCaptchaToken}
+                theme="light"
               />
             </div>
 
