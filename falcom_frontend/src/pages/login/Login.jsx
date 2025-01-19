@@ -50,6 +50,8 @@ const Login = () => {
   const handleVerifyOtp = () => {
     const data = { userId, otp };
 
+    console.log(data);
+
     verifyMfaCodeApi(data)
       .then((res) => {
         if (res.data.success) {
@@ -57,7 +59,7 @@ const Login = () => {
           setShowOtpModal(false);
           localStorage.setItem("token", res.data.token);
           localStorage.setItem("user", JSON.stringify(res.data.userData));
-          window.location.href = "/profile";
+          window.location.href = "/product";
         } else {
           toast.error(res.data.message || "Failed to verify OTP");
         }
@@ -83,7 +85,7 @@ const Login = () => {
 
     loginUserApi(data)
       .then((res) => {
-        if (res.data.success && res.data.requiresOtp) {
+        if (res.data.success) {
           toast.success(
             "OTP is required. Please enter the OTP sent to your email."
           );
@@ -97,7 +99,7 @@ const Login = () => {
           if (res.data.userData.isAdmin) {
             window.location.href = "/admin/dashboard";
           } else {
-            window.location.href = "/profile";
+            window.location.href = "/homepage";
           }
         } else {
           toast.error(res.data.message || "Failed to login. Please try again.");
@@ -106,7 +108,6 @@ const Login = () => {
       .catch((error) => {
         console.error("Error:", error);
         toast.error("Unable to locate your account.");
-        setShowOtpModal(true);
       });
   };
 
