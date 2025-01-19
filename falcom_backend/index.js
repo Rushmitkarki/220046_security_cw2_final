@@ -4,6 +4,9 @@ const connectDatabase = require("./database/database");
 const dotenv = require("dotenv");
 const cors = require("cors");
 const accessFromData = require("express-fileupload");
+const fs = require("fs");
+const path = require("path");
+const https = require("https");
 
 // Creating an express app
 const app = express();
@@ -39,6 +42,11 @@ app.get("/test", (req, res) => {
   res.send("Test API is Working!....");
 });
 
+const options = {
+  key: fs.readFileSync(path.resolve(__dirname, "server.key")),
+  cert: fs.readFileSync(path.resolve(__dirname, "server.crt")),
+};
+
 // Configuring Routes of User
 app.use("/api/user", require("./routes/userRoutes"));
 app.use("/api/product", require("./routes/productRoutes"));
@@ -51,8 +59,7 @@ app.use("/api/khalti", require("./routes/paymentRoutes"));
 // http://localhost:5000/test
 
 // Starting the server (always at the last)
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}....`);
+https.createServer(options, app).listen(PORT, () => {
+  console.log(`Server is running on PORT ${PORT}`);
 });
-
 module.exports = app;
