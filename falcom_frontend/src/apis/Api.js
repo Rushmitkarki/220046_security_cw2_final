@@ -177,7 +177,7 @@ const KhaltiApi = axios.create({
   baseURL: "https://test-pay.khalti.com/",
   headers: {
     "Content-Type": "application/json",
-    authorization: `key 723a1de3679647e2993b8537e48ec876`,
+    authorization: `key 5826720c2d604a8eae0be763afaabb41`,
   },
 });
 
