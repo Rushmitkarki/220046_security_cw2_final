@@ -41,7 +41,6 @@ const AppRoutes = () => {
         <Route element={<UserRoutes />}>
           <Route path="/profile" element={<Profile />} />
           <Route path="/product/:id" element={<ProductDetails />} />
-          
           <Route
             path="/tyre-age-calculator"
             element={<TyreAgeCalculator />}

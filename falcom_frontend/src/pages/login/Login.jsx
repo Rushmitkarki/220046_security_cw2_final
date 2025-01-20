@@ -58,7 +58,7 @@ const Login = () => {
           toast.success("OTP Verified Successfully");
           setShowOtpModal(false);
           localStorage.setItem("token", res.data.token);
-          localStorage.setItem("user", JSON.stringify(res.data.userData));
+          localStorage.setItem("user", JSON.stringify(res.data.user));
           window.location.href = "/profile";
         } else {
           toast.error(res.data.message || "Failed to verify OTP");

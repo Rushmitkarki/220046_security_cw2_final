@@ -108,7 +108,7 @@ const Navbar = () => {
         <div className={`${isOpen ? "block" : "hidden"} md:hidden`}>
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
             <a
-              href="/"
+              href="/homepage"
               className="text-black hover:bg-gray-200 hover:text-black block px-3 py-2 rounded-md text-base font-medium"
             >
               Home
