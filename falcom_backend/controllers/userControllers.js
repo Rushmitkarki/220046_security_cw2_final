@@ -14,6 +14,8 @@ const axios = require("axios");
 const { sendRegisterOtp } = require("../service/sendEmailOtp");
 const speakeasy = require("speakeasy");
 const nodemailer = require("nodemailer");
+const MAX_LOGIN_ATTEMPTS = 3;
+const BLOCK_DURATION = 15 * 60 * 1000;
 const createUser = async (req, res) => {
   const { firstName, lastName, userName, email, phoneNumber, password } =
     req.body;
@@ -306,83 +308,56 @@ const loginUser = async (req, res) => {
     });
   }
 
-  const key = `login_attempts:${email}`;
-
-  // Check if user is blocked
-  if (isUserBlocked(key)) {
-    return res.status(429).json({
-      success: false,
-      message:
-        "You are blocked for 15 minutes due to too many failed attempts.",
-    });
-  }
-
-  // Verify CAPTCHA
-  try {
-    const response = await axios.post(
-      `https://www.google.com/recaptcha/api/siteverify`,
-      null,
-      {
-        params: {
-          secret: process.env.RECAPTCHA_SECRET_KEY,
-          response: captchaToken,
-        },
-      }
-    );
-
-    if (!response.data.success) {
-      return res
-        .status(400)
-        .json({ success: false, message: "CAPTCHA validation failed!" });
-    }
-  } catch (err) {
-    console.error("CAPTCHA validation error:", err);
-    return res
-      .status(500)
-      .json({ success: false, message: "CAPTCHA validation error" });
-  }
-
-  // Login logic
   try {
     const user = await userModel.findOne({ email });
+
     if (!user) {
-      // Increment failed attempts
-      failedAttempts[key] = failedAttempts[key] || { count: 0 };
-      failedAttempts[key].count += 1;
-
-      // Block user if they exceed the limit
-      if (failedAttempts[key].count >= 3) {
-        blockUser(key);
-        return res.status(429).json({
-          success: false,
-          message: "Too many failed attempts. You are blocked for 15 minutes.",
-        });
-      }
-
-      return res
-        .status(400)
-        .json({ success: false, message: "User doesn't exist" });
+      return res.status(400).json({
+        success: false,
+        message: "User doesn't exist",
+      });
     }
 
+    // Check if the user is blocked
+    if (user.blockExpires && user.blockExpires > Date.now()) {
+      return res.status(429).json({
+        success: false,
+        message: `Account is blocked. Try again after ${Math.ceil(
+          (user.blockExpires - Date.now()) / 60000
+        )} minutes.`,
+      });
+    }
+
+    // Verify password
     const passwordCorrect = await bcrypt.compare(password, user.password);
     if (!passwordCorrect) {
-      // Increment failed attempts
-      failedAttempts[key] = failedAttempts[key] || { count: 0 };
-      failedAttempts[key].count += 1;
+      // Increment failed login attempts
+      user.loginAttempts += 1;
 
-      // Block user if they exceed the limit
-      if (failedAttempts[key].count >= 3) {
-        blockUser(key);
+      // Block the user if they exceed the maximum allowed attempts
+      if (user.loginAttempts >= MAX_LOGIN_ATTEMPTS) {
+        user.blockExpires = Date.now() + BLOCK_DURATION;
+        await user.save();
+
         return res.status(429).json({
           success: false,
-          message: "Too many failed attempts. You are blocked for 15 minutes.",
+          message: `Too many failed attempts. Account is blocked for ${Math.ceil(
+            BLOCK_DURATION / 60000
+          )} minutes.`,
         });
       }
 
-      return res
-        .status(400)
-        .json({ success: false, message: "Password is incorrect" });
+      await user.save();
+      return res.status(400).json({
+        success: false,
+        message: "Password is incorrect",
+      });
     }
+
+    // Reset login attempts on successful login
+    user.loginAttempts = 0;
+    user.blockExpires = null;
+    await user.save();
 
     // Generate OTP for MFA
     const otp = speakeasy.totp({
@@ -391,12 +366,8 @@ const loginUser = async (req, res) => {
     });
 
     // Store OTP in database with expiration
-    const otpExpiration = new Date();
-    otpExpiration.setMinutes(otpExpiration.getMinutes() + 5); // OTP expires in 5 minutes
-
     user.googleOTP = otp;
-    user.googleOTPExpires = otpExpiration;
-
+    user.googleOTPExpires = Date.now() + 5 * 60 * 1000; // OTP expires in 5 minutes
     await user.save();
 
     // Send OTP via email
@@ -414,9 +385,6 @@ const loginUser = async (req, res) => {
       subject: "Your One-Time Password (OTP)",
       text: `Your OTP for login is: ${otp}`,
     });
-
-    // Clear failed attempts
-    delete failedAttempts[key];
 
     res.status(200).json({
       success: true,
@@ -444,13 +412,22 @@ const verifyOTP = async (req, res) => {
   }
 
   try {
-    // Find user and check OTP
     const user = await userModel.findById(userId);
 
     if (!user) {
       return res.status(404).json({
         success: false,
         message: "User not found",
+      });
+    }
+
+    // Check if the user is blocked
+    if (user.blockExpires && user.blockExpires > Date.now()) {
+      return res.status(429).json({
+        success: false,
+        message: `Account is blocked. Try again after ${Math.ceil(
+          (user.blockExpires - Date.now()) / 60000
+        )} minutes.`,
       });
     }
 
@@ -463,12 +440,10 @@ const verifyOTP = async (req, res) => {
     }
 
     // Check if OTP has expired
-    if (new Date() > user.googleOTPExpires) {
-      // Clear expired OTP
-      await userModel.findByIdAndUpdate(userId, {
-        googleOTP: null,
-        googleOTPExpires: null,
-      });
+    if (Date.now() > user.googleOTPExpires) {
+      user.googleOTP = null;
+      user.googleOTPExpires = null;
+      await user.save();
 
       return res.status(400).json({
         success: false,
@@ -478,20 +453,38 @@ const verifyOTP = async (req, res) => {
 
     // Verify OTP
     if (user.googleOTP !== otp) {
+      // Increment failed OTP attempts
+      user.otpAttempts = (user.otpAttempts || 0) + 1;
+
+      // Block the user if they exceed the maximum allowed attempts
+      if (user.otpAttempts >= MAX_OTP_ATTEMPTS) {
+        user.blockExpires = Date.now() + BLOCK_DURATION;
+        await user.save();
+
+        return res.status(429).json({
+          success: false,
+          message: `Too many failed OTP attempts. Account is blocked for ${Math.ceil(
+            BLOCK_DURATION / 60000
+          )} minutes.`,
+        });
+      }
+
+      await user.save();
       return res.status(400).json({
         success: false,
         message: "Invalid OTP. Please try again.",
       });
     }
 
-    // OTP is valid, generate JWT token
-    const token = jwt.sign({ id: userId }, process.env.JWT_SECRET);
+    // Reset OTP attempts on successful verification
+    user.otpAttempts = 0;
+    user.blockExpires = null;
+    user.googleOTP = null;
+    user.googleOTPExpires = null;
+    await user.save();
 
-    // Clear the used OTP
-    await userModel.findByIdAndUpdate(userId, {
-      googleOTP: null,
-      googleOTPExpires: null,
-    });
+    // Generate JWT token
+    const token = jwt.sign({ id: userId }, process.env.JWT_SECRET);
 
     res.status(200).json({
       success: true,

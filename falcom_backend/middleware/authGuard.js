@@ -2,6 +2,7 @@ const userModel = require("../models/userModel");
 const jwt = require("jsonwebtoken");
 const axios = require("axios");
 const { StatusCodes } = require("http-status-codes");
+const rateLimit = require("express-rate-limit");
 
 const authGuard = async (req, res, next) => {
   //check incoming data
@@ -102,17 +103,27 @@ const adminGuard = (req, res, next) => {
 
   // not verified : not auth
 };
-// const forgotPasswordLimiter = rateLimit({
-//   windowMs: 15 * 60 * 1000, // 15 minutes
-//   max: 3,
-//   handler: (req, res) => {
-//     res.json({
-//       success: false,
-//       message:
-//         "Too many password reset attempts from this IP, please try again after 15 minutes",
-//     });
-//   },
-// });
+const forgotPasswordLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 3,
+  handler: (req, res) => {
+    res.json({
+      success: false,
+      message:
+        "Too many password reset attempts from this IP, please try again after 15 minutes",
+    });
+  },
+});
+const validateRequest = (schema) => (req, res, next) => {
+  const { error } = schema.validate(req.body);
+  if (error) {
+    return res.status(400).json({
+      success: false,
+      message: error.details[0].message,
+    });
+  }
+  next();
+};
 
 const verifyRecaptcha = async (req, res, next) => {
   console.log(req.body);
@@ -160,6 +171,7 @@ const verifyRecaptcha = async (req, res, next) => {
 module.exports = {
   authGuard,
   adminGuard,
-
+  forgotPasswordLimiter,
+  validateRequest,
   verifyRecaptcha,
 };

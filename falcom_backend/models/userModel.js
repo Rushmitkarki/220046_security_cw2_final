@@ -49,6 +49,10 @@ const userSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
+  otpAttempts: {
+    type: Number,
+    default: 0,
+  },
   blockExpires: {
     type: Date,
     default: null,
