@@ -6,7 +6,6 @@ const Api = axios.create({
   withCredentials: true,
   headers: {
     "Content-Type": "multipart/form-data",
-    // 'Content-Type': 'application/json',
   },
 });
 

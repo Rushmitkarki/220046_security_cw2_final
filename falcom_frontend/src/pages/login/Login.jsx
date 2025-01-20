@@ -59,7 +59,7 @@ const Login = () => {
           setShowOtpModal(false);
           localStorage.setItem("token", res.data.token);
           localStorage.setItem("user", JSON.stringify(res.data.userData));
-          window.location.href = "/product";
+          window.location.href = "/profile";
         } else {
           toast.error(res.data.message || "Failed to verify OTP");
         }
@@ -99,7 +99,7 @@ const Login = () => {
           if (res.data.userData.isAdmin) {
             window.location.href = "/admin/dashboard";
           } else {
-            window.location.href = "/homepage";
+            window.location.href = "/profile";
           }
         } else {
           toast.error(res.data.message || "Failed to login. Please try again.");
