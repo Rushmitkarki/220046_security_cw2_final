@@ -572,17 +572,17 @@ const getMe = async (req, res) => {
 };
 
 const forgotPassword = async (req, res) => {
-  const { email } = req.body;
+  const { phoneNumber } = req.body;
 
-  if (!email) {
+  if (!phoneNumber) {
     return res.status(400).json({
       success: false,
-      message: "Please provide an email.",
+      message: "Please provide an phone.",
     });
   }
 
   try {
-    const user = await userModel.findOne({ email });
+    const user = await userModel.findOne({ phoneNumber });
     if (!user) {
       return res.status(404).json({
         success: false,
@@ -600,10 +600,10 @@ const forgotPassword = async (req, res) => {
     }
 
     const otp = Math.floor(100000 + Math.random() * 900000);
-    await sendOtp(email, otp); // Replace with your actual email sending service logic
+    await sendOtp(phoneNumber, otp);
     user.resetPasswordOTP = otp;
-    user.resetPasswordExpires = Date.now() + 10 * 60 * 1000; // OTP valid for 10 minutes
-    user.otpBlockExpires = Date.now() + 10 * 60 * 1000; // Block OTP requests for 10 minutes
+    user.resetPasswordExpires = Date.now() + 10 * 60 * 1000;
+    user.otpBlockExpires = Date.now() + 10 * 60 * 1000;
     await user.save();
 
     res.status(200).json({

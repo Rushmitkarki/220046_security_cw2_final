@@ -69,6 +69,13 @@ export const pagination = (page, limit = 8) => {
 export const getProductCount = () => {
   return Api.get("/api/product/get_products_count", config);
 };
+// forgetpassword
+export const forgotPasswordApi = (data) =>
+  Api.post("/api/user/forgot_password", data);
+
+// verify otp and reset password
+export const verifyOtpAndResetPasswordApi = (data) =>
+  Api.post("/api/user/verify_otp", data);
 
 // Search products API
 export const searchProductsApi = (query) =>

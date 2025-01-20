@@ -4,6 +4,8 @@ import loginui from "../../assets/images/loginui.png";
 import "./Login.css";
 import { Toaster, toast } from "react-hot-toast";
 import {
+  forgotPasswordApi,
+  verifyOtpAndResetPasswordApi,
   getUserByGoogleEmail,
   googleLoginApi,
   loginUserApi,
@@ -14,19 +16,27 @@ import { jwtDecode } from "jwt-decode";
 import ReCAPTCHA from "react-google-recaptcha";
 
 const Login = () => {
+  // State for login form
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [googleToken, setGoogleToken] = useState("");
   const [googleId, setGoogleId] = useState("");
-  const [showModal, setShowModal] = useState(false);
   const [captchaToken, setCaptchaToken] = useState("");
   const [showOtpModal, setShowOtpModal] = useState(false);
   const [otp, setOtp] = useState("");
-  const [showLoginModal, setShowLoginModal] = useState(false);
   const [userId, setUserId] = useState("");
+  const [showModal, setShowModal] = useState(false);
 
+  // State for forgot password
+  const [showForgotPasswordModal, setShowForgotPasswordModal] = useState(false);
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [resetPasswordOtp, setResetPasswordOtp] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [showResetPasswordModal, setShowResetPasswordModal] = useState(false);
+
+  // Validation for login form
   const validation = () => {
     let isValid = true;
 
@@ -47,29 +57,7 @@ const Login = () => {
     return isValid;
   };
 
-  const handleVerifyOtp = () => {
-    const data = { userId, otp };
-
-    console.log(data);
-
-    verifyMfaCodeApi(data)
-      .then((res) => {
-        if (res.data.success) {
-          toast.success("OTP Verified Successfully");
-          setShowOtpModal(false);
-          localStorage.setItem("token", res.data.token);
-          localStorage.setItem("user", JSON.stringify(res.data.user));
-          window.location.href = "/profile";
-        } else {
-          toast.error(res.data.message || "Failed to verify OTP");
-        }
-      })
-      .catch((error) => {
-        console.error("Error verifying OTP:", error);
-        toast.error("Error verifying OTP");
-      });
-  };
-
+  // Handle login
   const handleLogin = (e) => {
     e.preventDefault();
 
@@ -91,16 +79,6 @@ const Login = () => {
           );
           setUserId(res.data.userId);
           setShowOtpModal(true);
-        } else if (res.data.success) {
-          toast.success(res.data.message);
-          localStorage.setItem("token", res.data.token);
-          localStorage.setItem("user", JSON.stringify(res.data.userData));
-
-          if (res.data.userData.isAdmin) {
-            window.location.href = "/admin/dashboard";
-          } else {
-            window.location.href = "/profile";
-          }
         } else {
           toast.error(res.data.message || "Failed to login. Please try again.");
         }
@@ -111,6 +89,29 @@ const Login = () => {
       });
   };
 
+  // Handle OTP verification
+  const handleVerifyOtp = () => {
+    const data = { userId, otp };
+
+    verifyMfaCodeApi(data)
+      .then((res) => {
+        if (res.data.success) {
+          toast.success("OTP Verified Successfully");
+          setShowOtpModal(false);
+          localStorage.setItem("token", res.data.token);
+          localStorage.setItem("user", JSON.stringify(res.data.user));
+          window.location.href = "/profile";
+        } else {
+          toast.error(res.data.message || "Failed to verify OTP");
+        }
+      })
+      .catch((error) => {
+        console.error("Error verifying OTP:", error);
+        toast.error("Error verifying OTP");
+      });
+  };
+
+  // Handle Google login
   const handleGoogleLogin = () => {
     googleLoginApi({ token: googleToken, googleId, password })
       .then((response) => {
@@ -126,6 +127,60 @@ const Login = () => {
       .catch((error) =>
         console.error("Error sending token to backend:", error)
       );
+  };
+
+  // Handle Forgot Password
+  const handleForgotPassword = () => {
+    setShowForgotPasswordModal(true);
+  };
+
+  // Handle Send OTP for forgot password
+  const handleSendOtp = () => {
+    if (!phoneNumber) {
+      toast.error("Please enter your phone number.");
+      return;
+    }
+
+    forgotPasswordApi({ phoneNumber })
+      .then((res) => {
+        if (res.data.success) {
+          toast.success("OTP sent successfully to your phone!");
+          setShowForgotPasswordModal(false);
+          setShowResetPasswordModal(true);
+        } else {
+          toast.error(res.data.message || "Failed to send OTP.");
+        }
+      })
+      .catch((error) => {
+        console.error("Error sending OTP:", error);
+        toast.error("Failed to send OTP. Please try again.");
+      });
+  };
+
+  // Handle Reset Password
+  const handleResetPassword = () => {
+    if (!resetPasswordOtp || !newPassword) {
+      toast.error("Please enter OTP and new password.");
+      return;
+    }
+
+    verifyOtpAndResetPasswordApi({
+      phoneNumber,
+      otp: resetPasswordOtp,
+      password: newPassword,
+    })
+      .then((res) => {
+        if (res.data.success) {
+          toast.success("Password reset successfully!");
+          setShowResetPasswordModal(false);
+        } else {
+          toast.error(res.data.message || "Failed to reset password.");
+        }
+      })
+      .catch((error) => {
+        console.error("Error resetting password:", error);
+        toast.error("Failed to reset password. Please try again.");
+      });
   };
 
   return (
@@ -209,6 +264,17 @@ const Login = () => {
               </Link>
             </p>
           </div>
+
+          <div className="forgot-password-link">
+            <p>
+              <button
+                onClick={handleForgotPassword}
+                className="text-blue-600 hover:underline"
+              >
+                Forgot Password?
+              </button>
+            </p>
+          </div>
         </div>
 
         <div className="login-image">
@@ -234,6 +300,70 @@ const Login = () => {
               </button>
               <button
                 onClick={() => setShowOtpModal(false)}
+                className="otp-cancel-button"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Forgot Password Modal */}
+      {showForgotPasswordModal && (
+        <div className="otp-modal">
+          <div className="otp-modal-content">
+            <h3>Forgot Password</h3>
+            <input
+              type="text"
+              placeholder="Enter Phone Number"
+              value={phoneNumber}
+              onChange={(e) => setPhoneNumber(e.target.value)}
+              className="otp-input"
+            />
+            <div className="otp-modal-buttons">
+              <button onClick={handleSendOtp} className="otp-verify-button">
+                Send OTP
+              </button>
+              <button
+                onClick={() => setShowForgotPasswordModal(false)}
+                className="otp-cancel-button"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reset Password Modal */}
+      {showResetPasswordModal && (
+        <div className="otp-modal">
+          <div className="otp-modal-content">
+            <h3>Reset Password</h3>
+            <input
+              type="text"
+              placeholder="Enter OTP"
+              value={resetPasswordOtp}
+              onChange={(e) => setResetPasswordOtp(e.target.value)}
+              className="otp-input"
+            />
+            <input
+              type="password"
+              placeholder="Enter New Password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              className="otp-input"
+            />
+            <div className="otp-modal-buttons">
+              <button
+                onClick={handleResetPassword}
+                className="otp-verify-button"
+              >
+                Reset Password
+              </button>
+              <button
+                onClick={() => setShowResetPasswordModal(false)}
                 className="otp-cancel-button"
               >
                 Cancel
