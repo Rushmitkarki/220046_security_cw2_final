@@ -306,6 +306,17 @@ const loginUser = async (req, res) => {
     });
   }
 
+  const key = `login_attempts:${email}`;
+
+  // Check if user is blocked
+  if (isUserBlocked(key)) {
+    return res.status(429).json({
+      success: false,
+      message:
+        "You are blocked for 15 minutes due to too many failed attempts.",
+    });
+  }
+
   // Verify CAPTCHA
   try {
     const response = await axios.post(
@@ -331,35 +342,22 @@ const loginUser = async (req, res) => {
       .json({ success: false, message: "CAPTCHA validation error" });
   }
 
-  // Track login attempts in-memory
-  const ip = req.ip;
-  const loginAttempts = global.loginAttempts || {};
-  const userKey = `login_attempts:${ip}`;
-  const currentAttempts = loginAttempts[userKey] || {
-    count: 0,
-    timestamp: null,
-  };
-
-  if (
-    currentAttempts.count >= 5 &&
-    currentAttempts.timestamp &&
-    Date.now() - currentAttempts.timestamp < 60 * 1000
-  ) {
-    return res.status(429).json({
-      success: false,
-      message: "Too many login attempts, please try again later.",
-    });
-  }
-
   // Login logic
   try {
     const user = await userModel.findOne({ email });
     if (!user) {
-      loginAttempts[userKey] = {
-        count: currentAttempts.count + 1,
-        timestamp: Date.now(),
-      };
-      global.loginAttempts = loginAttempts;
+      // Increment failed attempts
+      failedAttempts[key] = failedAttempts[key] || { count: 0 };
+      failedAttempts[key].count += 1;
+
+      // Block user if they exceed the limit
+      if (failedAttempts[key].count >= 3) {
+        blockUser(key);
+        return res.status(429).json({
+          success: false,
+          message: "Too many failed attempts. You are blocked for 15 minutes.",
+        });
+      }
 
       return res
         .status(400)
@@ -368,11 +366,18 @@ const loginUser = async (req, res) => {
 
     const passwordCorrect = await bcrypt.compare(password, user.password);
     if (!passwordCorrect) {
-      loginAttempts[userKey] = {
-        count: currentAttempts.count + 1,
-        timestamp: Date.now(),
-      };
-      global.loginAttempts = loginAttempts;
+      // Increment failed attempts
+      failedAttempts[key] = failedAttempts[key] || { count: 0 };
+      failedAttempts[key].count += 1;
+
+      // Block user if they exceed the limit
+      if (failedAttempts[key].count >= 3) {
+        blockUser(key);
+        return res.status(429).json({
+          success: false,
+          message: "Too many failed attempts. You are blocked for 15 minutes.",
+        });
+      }
 
       return res
         .status(400)
@@ -410,9 +415,8 @@ const loginUser = async (req, res) => {
       text: `Your OTP for login is: ${otp}`,
     });
 
-    // Successful login (MFA pending), reset rate limit counter for IP
-    delete loginAttempts[userKey];
-    global.loginAttempts = loginAttempts;
+    // Clear failed attempts
+    delete failedAttempts[key];
 
     res.status(200).json({
       success: true,
@@ -627,18 +631,43 @@ const verifyOtpAndResetPassword = async (req, res) => {
       message: "Please enter all fields",
     });
   }
+
+  const key = `otp_attempts:${phoneNumber}`;
+
+  // Check if user is blocked
+  if (isUserBlocked(key)) {
+    return res.status(429).json({
+      success: false,
+      message:
+        "You are blocked for 15 minutes due to too many failed attempts.",
+    });
+  }
+
   try {
     const user = await userModel.findOne({ phoneNumber: phoneNumber });
 
-    //Verify OTP
+    // Verify OTP
     if (user.resetPasswordOTP != otp) {
+      // Increment failed attempts
+      failedAttempts[key] = failedAttempts[key] || { count: 0 };
+      failedAttempts[key].count += 1;
+
+      // Block user if they exceed the limit
+      if (failedAttempts[key].count >= 3) {
+        blockUser(key);
+        return res.status(429).json({
+          success: false,
+          message: "Too many failed attempts. You are blocked for 15 minutes.",
+        });
+      }
+
       return res.status(400).json({
         success: false,
         message: "Invalid OTP",
       });
     }
 
-    //Check if OTP is expired
+    // Check if OTP is expired
     if (user.resetPasswordExpires < Date.now()) {
       return res.status(400).json({
         success: false,
@@ -646,15 +675,18 @@ const verifyOtpAndResetPassword = async (req, res) => {
       });
     }
 
-    //Hash the password
+    // Hash the password
     const randomSalt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, randomSalt);
 
-    //update to database
+    // Update to database
     user.password = hashedPassword;
     await user.save();
 
-    //Send response
+    // Clear failed attempts
+    delete failedAttempts[key];
+
+    // Send response
     res.status(200).json({
       success: true,
       message: "Password reset successfully",
@@ -750,6 +782,24 @@ const editUserProfile = async (req, res) => {
       error: error.message,
     });
   }
+};
+// Global object to track failed attempts
+const failedAttempts = {};
+
+// Function to block user for 15 minutes
+const blockUser = (key) => {
+  failedAttempts[key] = {
+    count: 0,
+    timestamp: Date.now() + 15 * 60 * 1000, // Block for 15 minutes
+  };
+};
+
+// Function to check if user is blocked
+const isUserBlocked = (key) => {
+  if (failedAttempts[key] && failedAttempts[key].timestamp > Date.now()) {
+    return true;
+  }
+  return false;
 };
 
 module.exports = {

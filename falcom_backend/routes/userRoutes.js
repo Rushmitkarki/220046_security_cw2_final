@@ -1,6 +1,10 @@
 const router = require("express").Router();
 const userController = require("../controllers/userControllers");
-const { authGuard, verifyRecaptcha } = require("../middleware/authGuard");
+const {
+  authGuard,
+  verifyRecaptcha,
+  forgotPasswordLimiter,
+} = require("../middleware/authGuard");
 
 // Creating user registration route
 router.post("/create", userController.createUser);
@@ -17,7 +21,11 @@ router.get("/current", userController.getCurrentUser);
 // get me
 router.get("/getMe", authGuard, userController.getMe);
 
-router.post("/forgot_password", userController.forgotPassword);
+router.post(
+  "/forgot_password",
+
+  userController.forgotPassword
+);
 
 // verify otp and reset password
 router.post("/verify_otp", userController.verifyOtpAndResetPassword);

@@ -55,7 +55,7 @@ const Login = () => {
     }
 
     return isValid;
-  };
+  };  
 
   // Handle login
   const handleLogin = (e) => {
