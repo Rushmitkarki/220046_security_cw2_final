@@ -26,7 +26,7 @@ const PlaceOrder = () => {
     state: "",
     zipCode: "",
     country: "",
-    phone: "",
+    phoneNumber: "",
     deliveryFee: 40.0,
   });
 
@@ -47,7 +47,7 @@ const PlaceOrder = () => {
           state: DOMPurify.sanitize(response.data.user.state || ""),
           zipCode: DOMPurify.sanitize(response.data.user.zipCode || ""),
           country: DOMPurify.sanitize(response.data.user.country || ""),
-          phone: DOMPurify.sanitize(response.data.user.phone || ""),
+          phone: DOMPurify.sanitize(response.data.user.phoneNumber || ""),
         }));
       }
     } catch (error) {
