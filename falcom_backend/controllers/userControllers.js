@@ -17,6 +17,12 @@ const nodemailer = require("nodemailer");
 const MAX_LOGIN_ATTEMPTS = 3;
 const BLOCK_DURATION = 15 * 60 * 1000;
 const MAX_OTP_ATTEMPTS = 3;
+
+const generateToken = (userId) => {
+  return jwt.sign({ id: userId }, process.env.JWT_SECRET, {
+    expiresIn: "24h",
+  });
+};
 const createUser = async (req, res) => {
   const { firstName, lastName, userName, email, phoneNumber, password } =
     req.body;
@@ -818,4 +824,5 @@ module.exports = {
   googleLogin,
   getUserByGoogleEmail,
   verifyRegistrationOtp,
+  generateToken,
 };
