@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -68,8 +67,8 @@ const AdminDashboard = () => {
       setProductDescriptionError("Product Description is required");
       valid = false;
     }
-    if (productPrice.trim() === "") {
-      setProductPriceError("Product Price is required");
+    if (productPrice.trim() === "" || parseFloat(productPrice) < 0) {
+      setProductPriceError("Product Price must be a non-negative number");
       valid = false;
     }
     if (productCategory.trim() === "") {
@@ -80,8 +79,8 @@ const AdminDashboard = () => {
       setProductImageError("Product Image is required");
       valid = false;
     }
-    if (productQuantity.trim() === "") {
-      setProductQuantityError("Product Quantity is required");
+    if (productQuantity.trim() === "" || parseInt(productQuantity) < 0) {
+      setProductQuantityError("Product Quantity must be a non-negative number");
       valid = false;
     }
     return valid;
