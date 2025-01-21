@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { Table, Space, Spin, Alert } from "antd";
-import { getUserActivityLogs } from "../../../apis/Api";
+import { Table, Space, Spin, Alert, Button, message } from "antd";
+import { getUserActivityLogs, deleteUserApi } from "../../../apis/Api";
 
 const UserLog = () => {
   const [loading, setLoading] = useState(true);
@@ -24,6 +24,27 @@ const UserLog = () => {
       setError("Failed to fetch activity logs. Please try again later.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDeleteUser = async (userId) => {
+    try {
+      const token = localStorage.getItem("token");
+      await deleteUserApi(userId, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      // Remove the deleted user from the table
+      setActivityLogs((prevLogs) =>
+        prevLogs.filter((log) => log.user._id !== userId)
+      );
+
+      message.success("User and their activities deleted successfully!");
+    } catch (error) {
+      console.error(error);
+      message.error("Failed to delete user. Please try again later.");
     }
   };
 
@@ -59,6 +80,21 @@ const UserLog = () => {
       dataIndex: "details",
       key: "details",
       render: (details) => JSON.stringify(details),
+    },
+    {
+      title: "Action",
+      key: "action",
+      render: (_, record) => (
+        <Space size="middle">
+          <Button
+            type="link"
+            danger
+            onClick={() => handleDeleteUser(record.user._id)}
+          >
+            Delete
+          </Button>
+        </Space>
+      ),
     },
   ];
 

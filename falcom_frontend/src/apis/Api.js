@@ -195,3 +195,7 @@ export const refreshTokenApi = (userId) =>
 // getuser activity
 export const getUserActivityLogs = (config) =>
   Api.get("/api/admin/activities", config);
+
+// deleteuser
+export const deleteUserApi = (userId) =>
+  Api.delete(`/api/admin/delete_user/${userId}`, config);
