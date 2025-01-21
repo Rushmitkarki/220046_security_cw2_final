@@ -34,6 +34,15 @@ const createUser = async (req, res) => {
       message: "Please enter all details!",
     });
   }
+  const passwordRegex =
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/;
+  if (!passwordRegex.test(password)) {
+    return res.json({
+      success: false,
+      message:
+        "Password must contain at least 1 lowercase letter, 1 uppercase letter, 1 number, 1 special character, and be at least 6 characters long.",
+    });
+  }
 
   try {
     const existingUser = await userModel.findOne({ email });

@@ -28,6 +28,13 @@ function Register() {
   const [failedAttempts, setFailedAttempts] = useState(0);
   const [isBlocked, setIsBlocked] = useState(false);
 
+  // Password validation function
+  const validatePassword = (password) => {
+    const passwordRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/;
+    return passwordRegex.test(password);
+  };
+
   const validateForm = () => {
     let isValid = true;
 
@@ -87,8 +94,10 @@ function Register() {
     if (!sanitizedPassword) {
       setPasswordError("Password is required");
       isValid = false;
-    } else if (sanitizedPassword.length < 8) {
-      setPasswordError("Password must be at least 8 characters long");
+    } else if (!validatePassword(sanitizedPassword)) {
+      setPasswordError(
+        "Password must contain at least 1 lowercase letter, 1 uppercase letter, 1 number, 1 special character, and be at least 6 characters long"
+      );
       isValid = false;
     } else {
       setPasswordError("");
