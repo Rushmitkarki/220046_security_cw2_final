@@ -6,7 +6,6 @@ const { authGuard, isAdmin, adminGuard } = require("../middleware/authGuard");
 // Get all user activities (Admin only)
 router.get(
   "/activities",
-  isAdmin,
 
   activityController.getAllUserActivities
 );
