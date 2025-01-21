@@ -48,7 +48,7 @@ const Profile = () => {
             setError(err.response.data.message);
           });
 
-        pagination(page, 8) // Fetch the first 8 products
+        pagination(page, 8)
           .then((res) => {
             setProducts(res.data.products);
           })
@@ -61,12 +61,13 @@ const Profile = () => {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("user");
     navigate("/login", { replace: true });
   };
 
   const handlePagination = (id) => {
     setPage(id);
-    pagination(id, 8) // Adjusted for 8 products per page
+    pagination(id, 8)
       .then((res) => {
         setProducts(res.data.products);
       })

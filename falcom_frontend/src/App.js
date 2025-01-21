@@ -35,8 +35,6 @@ const AppRoutes = () => {
         <Route element={<AdminRoutes />}>
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/update/:id" element={<UpdateProduct />} />
-          {/* <Route path="/admin/dashboard/orders" element={<ViewOrder />} /> */}
-          {/* Add this line */}
         </Route>
         <Route element={<UserRoutes />}>
           <Route path="/profile" element={<Profile />} />
