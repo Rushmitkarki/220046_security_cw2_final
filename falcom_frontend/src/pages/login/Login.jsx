@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import loginui from "../../assets/images/loginui.png";
 import "./Login.css";
@@ -36,6 +36,25 @@ const Login = () => {
   const [newPassword, setNewPassword] = useState("");
   const [showResetPasswordModal, setShowResetPasswordModal] = useState(false);
 
+  // State for tracking failed attempts
+  const [failedAttempts, setFailedAttempts] = useState(0);
+  const [isBlocked, setIsBlocked] = useState(false);
+
+  // Effect to block user for 15 minutes
+  useEffect(() => {
+    if (failedAttempts >= 3) {
+      setIsBlocked(true);
+      toast.error(
+        "You are blocked for 15 minutes due to too many failed attempts."
+      );
+      const timer = setTimeout(() => {
+        setIsBlocked(false);
+        setFailedAttempts(0);
+      }, 15 * 60 * 1000); // 15 minutes
+      return () => clearTimeout(timer);
+    }
+  }, [failedAttempts]);
+
   // Validation for login form
   const validation = () => {
     let isValid = true;
@@ -55,7 +74,7 @@ const Login = () => {
     }
 
     return isValid;
-  };  
+  };
 
   // Handle login
   const handleLogin = (e) => {
@@ -159,6 +178,13 @@ const Login = () => {
 
   // Handle Reset Password
   const handleResetPassword = () => {
+    if (isBlocked) {
+      toast.error(
+        "You are blocked for 15 minutes due to too many failed attempts."
+      );
+      return;
+    }
+
     if (!resetPasswordOtp || !newPassword) {
       toast.error("Please enter OTP and new password.");
       return;
@@ -173,12 +199,15 @@ const Login = () => {
         if (res.data.success) {
           toast.success("Password reset successfully!");
           setShowResetPasswordModal(false);
+          setFailedAttempts(0); // Reset failed attempts on success
         } else {
+          setFailedAttempts(failedAttempts + 1); // Increment failed attempts
           toast.error(res.data.message || "Failed to reset password.");
         }
       })
       .catch((error) => {
         console.error("Error resetting password:", error);
+        setFailedAttempts(failedAttempts + 1); // Increment failed attempts
         toast.error("Failed to reset password. Please try again.");
       });
   };

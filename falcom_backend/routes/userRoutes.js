@@ -34,11 +34,11 @@ router.post(
 );
 
 // Creating user login route
-router.post("/login", validateRequest(loginSchema), userController.loginUser);
+router.post("/login", userController.loginUser);
 
 router.post(
   "/verifyOTP",
-  validateRequest(verifyOTPSchema),
+
   userController.verifyOTP
 );
 
@@ -51,7 +51,7 @@ router.get("/getMe", authGuard, userController.getMe);
 
 router.post(
   "/forgot_password",
-  validateRequest(forgotPasswordSchema),
+  forgotPasswordLimiter,
 
   userController.forgotPassword
 );
@@ -59,7 +59,7 @@ router.post(
 // verify otp and reset password
 router.post(
   "/verify_otp",
-  validateRequest(resetPasswordSchema),
+
   userController.verifyOtpAndResetPassword
 );
 
