@@ -1,4 +1,5 @@
 const { response } = require("express");
+const ActivityLog = require("../models/activityLogModel");
 
 const userModel = require("../models/userModel");
 const { checkout } = require("../routes/userRoutes");

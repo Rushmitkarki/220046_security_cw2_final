@@ -193,4 +193,5 @@ export const refreshTokenApi = (userId) =>
   Api.post(`/api/user/refresh-token/${userId}`);
 
 // getuser activity
-export const getUserActivityLogs = () => Api.get("/api/admin/activities");
+export const getUserActivityLogs = (config) =>
+  Api.get("/api/admin/activities", config);

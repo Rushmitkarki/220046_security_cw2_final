@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Table, Space, Spin, Alert } from "antd";
-import { getUserActivityLogs } from "../api/adminApi";
+import { getUserActivityLogs } from "../../../apis/Api";
 
 const UserLog = () => {
   const [loading, setLoading] = useState(true);
@@ -13,7 +13,12 @@ const UserLog = () => {
 
   const fetchActivityLogs = async () => {
     try {
-      const response = await getUserActivityLogs();
+      const token = localStorage.getItem("token"); // Get the token from local storage
+      const response = await getUserActivityLogs({
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       setActivityLogs(response.data.activities);
     } catch (err) {
       setError("Failed to fetch activity logs. Please try again later.");

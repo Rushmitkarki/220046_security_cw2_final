@@ -8,6 +8,7 @@ import {
 } from "../../../apis/Api";
 import backgroundImage from "../../../assets/images/cliptire.png";
 import ViewOrder from "./viewOrder";
+import UserLog from "../userlog/UserLog";
 
 const AdminDashboard = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -195,28 +196,32 @@ const AdminDashboard = () => {
 
       <div className="container mx-auto px-4 py-8">
         <div className="flex space-x-4 mb-8">
-          {["add-product", "view-product", "view-order", "your-panel"].map(
-            (tab) => (
-              <button
-                key={tab}
-                className={`px-6 py-3 font-semibold rounded-lg transition-colors duration-200 ${
-                  activeTab === tab
-                    ? isDarkMode
-                      ? "bg-white text-gray-800"
-                      : "bg-white text-gray-800"
-                    : isDarkMode
-                    ? "bg-[#211e21] text-white hover:bg-gray-800"
-                    : "bg-white text-gray-800 hover:bg-gray-100"
-                }`}
-                onClick={() => setActiveTab(tab)}
-              >
-                {tab
-                  .split("-")
-                  .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-                  .join(" ")}
-              </button>
-            )
-          )}
+          {[
+            "add-product",
+            "view-product",
+            "view-order",
+            "user-log",
+            "your-panel",
+          ].map((tab) => (
+            <button
+              key={tab}
+              className={`px-6 py-3 font-semibold rounded-lg transition-colors duration-200 ${
+                activeTab === tab
+                  ? isDarkMode
+                    ? "bg-white text-gray-800"
+                    : "bg-white text-gray-800"
+                  : isDarkMode
+                  ? "bg-[#211e21] text-white hover:bg-gray-800"
+                  : "bg-white text-gray-800 hover:bg-gray-100"
+              }`}
+              onClick={() => setActiveTab(tab)}
+            >
+              {tab
+                .split("-")
+                .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                .join(" ")}
+            </button>
+          ))}
         </div>
 
         {activeTab === "add-product" && (
@@ -324,6 +329,16 @@ const AdminDashboard = () => {
             } shadow-md rounded-lg overflow-hidden`}
           >
             <ViewOrder />
+          </div>
+        )}
+
+        {activeTab === "user-log" && (
+          <div
+            className={`${
+              isDarkMode ? "bg-gray-800" : "bg-white"
+            } shadow-md rounded-lg overflow-hidden`}
+          >
+            <UserLog />
           </div>
         )}
 
