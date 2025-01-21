@@ -14,6 +14,7 @@ import {
 import { GoogleLogin } from "@react-oauth/google";
 import { jwtDecode } from "jwt-decode";
 import ReCAPTCHA from "react-google-recaptcha";
+import validator from "validator";
 
 const Login = () => {
   // State for login form
@@ -55,19 +56,26 @@ const Login = () => {
     }
   }, [failedAttempts]);
 
-  // Validation for login form
-  const validation = () => {
+  // Validate login form
+  const validateForm = () => {
     let isValid = true;
 
-    if (email.trim() === "" || !email.includes("@")) {
-      setEmailError("Email is empty or invalid");
+    // Sanitize and validate email
+    const sanitizedEmail = validator.normalizeEmail(email.trim());
+    if (!sanitizedEmail || !validator.isEmail(sanitizedEmail)) {
+      setEmailError("Invalid email address");
       isValid = false;
     } else {
       setEmailError("");
     }
 
-    if (password.trim() === "") {
-      setPasswordError("Password is empty");
+    // Sanitize and validate password
+    const sanitizedPassword = password.trim();
+    if (!sanitizedPassword) {
+      setPasswordError("Password is required");
+      isValid = false;
+    } else if (sanitizedPassword.length < 8) {
+      setPasswordError("Password must be at least 8 characters long");
       isValid = false;
     } else {
       setPasswordError("");
@@ -80,13 +88,21 @@ const Login = () => {
   const handleLogin = (e) => {
     e.preventDefault();
 
-    if (!validation()) {
+    if (isBlocked) {
+      toast.error(
+        "You are blocked for 15 minutes due to too many failed attempts."
+      );
+      return;
+    }
+
+    if (!validateForm()) {
+      setFailedAttempts((prev) => prev + 1);
       return;
     }
 
     const data = {
-      email: email,
-      password: password,
+      email: validator.normalizeEmail(email.trim()),
+      password: password.trim(),
       captchaToken: captchaToken,
     };
 
@@ -104,13 +120,19 @@ const Login = () => {
       })
       .catch((error) => {
         console.error("Error:", error);
-        toast.error("cannot login");
+        toast.error("Cannot login");
       });
   };
 
   // Handle OTP verification
   const handleVerifyOtp = () => {
-    const data = { userId, otp };
+    const sanitizedOtp = validator.escape(otp.trim());
+    if (!sanitizedOtp) {
+      toast.error("OTP is required");
+      return;
+    }
+
+    const data = { userId, otp: sanitizedOtp };
 
     verifyMfaCodeApi(data)
       .then((res) => {
@@ -159,12 +181,16 @@ const Login = () => {
 
   // Handle Send OTP for forgot password
   const handleSendOtp = () => {
-    if (!phoneNumber) {
-      toast.error("Please enter your phone number.");
+    const sanitizedPhoneNumber = validator.escape(phoneNumber.trim());
+    if (
+      !sanitizedPhoneNumber ||
+      !validator.isMobilePhone(sanitizedPhoneNumber, "en-IN")
+    ) {
+      toast.error("Invalid phone number (10 digits required)");
       return;
     }
 
-    forgotPasswordApi({ phoneNumber })
+    forgotPasswordApi({ phoneNumber: sanitizedPhoneNumber })
       .then((res) => {
         if (res.data.success) {
           toast.success("OTP sent successfully to your phone!");
@@ -189,15 +215,23 @@ const Login = () => {
       return;
     }
 
-    if (!resetPasswordOtp || !newPassword) {
+    const sanitizedOtp = validator.escape(resetPasswordOtp.trim());
+    const sanitizedNewPassword = newPassword.trim();
+
+    if (!sanitizedOtp || !sanitizedNewPassword) {
       toast.error("Please enter OTP and new password.");
       return;
     }
 
+    if (sanitizedNewPassword.length < 8) {
+      toast.error("Password must be at least 8 characters long");
+      return;
+    }
+
     verifyOtpAndResetPasswordApi({
-      phoneNumber,
-      otp: resetPasswordOtp,
-      password: newPassword,
+      phoneNumber: validator.escape(phoneNumber.trim()),
+      otp: sanitizedOtp,
+      password: sanitizedNewPassword,
     })
       .then((res) => {
         if (res.data.success) {
@@ -208,14 +242,16 @@ const Login = () => {
           setFailedAttempts(failedAttempts + 1);
           toast.error(
             res.data.message ||
-              "You have blocked for 15 minute for many attempts."
+              "You have been blocked for 15 minutes due to too many attempts."
           );
         }
       })
       .catch((error) => {
         console.error("Error resetting password:", error);
         setFailedAttempts(failedAttempts + 1); // Increment failed attempts
-        toast.error("You have blocked for 15 minute for many attempts.");
+        toast.error(
+          "You have been blocked for 15 minutes due to too many attempts."
+        );
       });
   };
 
