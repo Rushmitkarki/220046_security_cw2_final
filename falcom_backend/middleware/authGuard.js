@@ -5,52 +5,40 @@ const { StatusCodes } = require("http-status-codes");
 const rateLimit = require("express-rate-limit");
 
 const authGuard = async (req, res, next) => {
-  //check incoming data
-  console.log(req.headers); // passed going to next
+  const token = req.headers.authorization?.split(" ")[1];
 
-  // get authorization data fromheader
-  const authHeader = req.headers.authorization;
-
-  // check or validate
-  if (!authHeader) {
-    return res.status(400).json({
+  if (!token) {
+    return res.status(401).json({
       success: false,
-      message: "Auth header not found",
+      message: "No token provided",
     });
   }
 
-  // Split the data(Format: Bearer token)
-  const token = authHeader.split(" ")[1];
-
-  // if token not found : stop the process (res)
-  if (!token || token === "") {
-    return res.status(400).json({
-      success: false,
-      message: "Token not found",
-    });
-  }
-
-  // verify
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await userModel.findById(decoded.id);
+    const user = await userModel.findById(decoded.id).select("-password");
+
     if (!user) {
       return res.status(404).json({
         success: false,
         message: "User not found",
       });
     }
-    req.user = decoded;
+
+    req.user = user;
     next();
   } catch (error) {
+    if (error.name === "TokenExpiredError") {
+      return res.status(401).json({
+        success: false,
+        message: "Token expired. Please log in again.",
+      });
+    }
     res.status(500).json({
-      sucess: false,
-      message: "Not Authorized",
+      success: false,
+      message: "Not authorized",
     });
   }
-  // if verified : next (function is controller)
-
-  // not verified : not auth
 };
 
 // Admin guard

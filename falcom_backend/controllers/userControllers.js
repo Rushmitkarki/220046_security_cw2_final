@@ -23,6 +23,41 @@ const generateToken = (userId) => {
     expiresIn: "24h",
   });
 };
+const refreshToken = async (req, res) => {
+  const { userId } = req.body;
+
+  if (!userId) {
+    return res.status(400).json({
+      success: false,
+      message: "User ID is required",
+    });
+  }
+
+  try {
+    const user = await userModel.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    const newToken = generateToken(user._id);
+
+    res.status(200).json({
+      success: true,
+      message: "Token refreshed successfully",
+      token: newToken,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
 const createUser = async (req, res) => {
   const { firstName, lastName, userName, email, phoneNumber, password } =
     req.body;
@@ -401,11 +436,13 @@ const loginUser = async (req, res) => {
       subject: "Your One-Time Password (OTP)",
       text: `Your OTP for login is: ${otp}`,
     });
+    const token = generateToken(user._id);
 
     res.status(200).json({
       success: true,
       message: "OTP sent to your email. Please verify to complete login.",
       userId: user._id,
+      token,
     });
   } catch (err) {
     console.error(err);
@@ -825,4 +862,5 @@ module.exports = {
   getUserByGoogleEmail,
   verifyRegistrationOtp,
   generateToken,
+  refreshToken,
 };

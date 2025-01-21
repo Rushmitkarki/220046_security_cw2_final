@@ -46,6 +46,9 @@ router.post(
 
 router.get("/current", userController.getCurrentUser);
 
+// refresh token
+router.post("/refresh-token", authGuard, userController.refreshToken);
+
 // get me
 router.get("/getMe", authGuard, userController.getMe);
 

@@ -187,3 +187,7 @@ export const initiateKhaltiPayment = (data) =>
 // verfy the registerotp
 export const verifyRegistrationOtpApi = (data) =>
   Api.post("/api/user/verify_registration_otp", data);
+
+// refresh token
+export const refreshTokenApi = (userId) =>
+  Api.post(`/api/user/refresh-token/${userId}`);
