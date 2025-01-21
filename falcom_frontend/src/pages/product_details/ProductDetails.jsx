@@ -14,13 +14,15 @@ import { toast } from "react-toastify";
 import ProductCard from "../../components/ProductCard";
 import { FaShoppingCart, FaDollarSign } from "react-icons/fa";
 import { Star } from "lucide-react";
+import DOMPurify from "dompurify"; // For sanitizing HTML
+import validator from "validator"; // For sanitizing inputs
 
 const ProductDetails = () => {
   const { id } = useParams();
   const [product, setProduct] = useState(null);
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [quantity, setQuantity] = useState(1);
+  const [quantity, setQuantity] = useState(1); // Default quantity set to 1
   const [totalPrice, setTotalPrice] = useState(0);
   const [isOutStock, setIsOutStock] = useState(false);
   const [recommendedProducts, setRecommendedProducts] = useState([]);
@@ -131,12 +133,20 @@ const ProductDetails = () => {
   const handleReviewSubmit = async (event) => {
     event.preventDefault();
 
-    if (!rating || !review) {
+    // Sanitize inputs
+    const sanitizedReview = DOMPurify.sanitize(review);
+    const sanitizedRating = validator.escape(rating.toString());
+
+    if (!sanitizedRating || !sanitizedReview) {
       toast.error("Please ensure all fields are filled correctly.");
       return;
     }
 
-    addReviewApi({ productId: product._id, rating, review })
+    addReviewApi({
+      productId: product._id,
+      rating: sanitizedRating,
+      review: sanitizedReview,
+    })
       .then((response) => {
         if (response.status === 201) {
           toast.success(response.data.message);
@@ -175,7 +185,7 @@ const ProductDetails = () => {
           <input
             type="text"
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => setSearchQuery(validator.escape(e.target.value))} // Sanitize search query
             onKeyPress={handleKeyPress}
             className="w-full px-6 py-3 bg-gray-800 border border-gray-700 rounded-l-full focus:outline-none focus:ring-2 focus:ring-red-500"
             placeholder="Search for products..."
@@ -222,7 +232,9 @@ const ProductDetails = () => {
 
         {/* Right section with product details */}
         <div className="space-y-6">
-          <h1 className="text-4xl font-bold">{product.productName}</h1>
+          <h1 className="text-4xl font-bold">
+            {DOMPurify.sanitize(product.productName)}
+          </h1>
           <p className="text-xl text-gray-400">Trademark Fine Art</p>
           <p className="text-3xl font-bold text-red-500">NPR. {totalPrice}</p>
 
@@ -259,9 +271,11 @@ const ProductDetails = () => {
                 type="number"
                 id="quantity"
                 name="quantity"
+                value={quantity}
                 onChange={(e) => {
-                  setQuantity(e.target.value);
-                  updateStockStatus(product, e.target.value);
+                  const newQuantity = Math.max(1, parseInt(e.target.value)); // Ensure quantity is at least 1
+                  setQuantity(newQuantity);
+                  updateStockStatus(product, newQuantity);
                 }}
                 min="1"
                 max={product.productQuantity}
@@ -285,12 +299,14 @@ const ProductDetails = () => {
 
           <div>
             <span className="font-semibold">Category:</span>{" "}
-            <span>{product.productCategory}</span>
+            <span>{DOMPurify.sanitize(product.productCategory)}</span>
           </div>
 
           <div>
             <span className="font-semibold">Description:</span>{" "}
-            <p className="mt-2 text-gray-300">{product.productDescription}</p>
+            <p className="mt-2 text-gray-300">
+              {DOMPurify.sanitize(product.productDescription)}
+            </p>
           </div>
         </div>
       </div>
@@ -321,7 +337,9 @@ const ProductDetails = () => {
                   {review.date}
                 </span>
               </div>
-              <p className="text-gray-300">{review.review}</p>
+              <p className="text-gray-300">
+                {DOMPurify.sanitize(review.review)}
+              </p>
             </div>
           ))
         ) : (

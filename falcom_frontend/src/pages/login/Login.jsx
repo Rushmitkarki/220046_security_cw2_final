@@ -104,9 +104,7 @@ const Login = () => {
       })
       .catch((error) => {
         console.error("Error:", error);
-        toast.error(
-          "You are blocked for 15 minutes due to too many failed attempts."
-        );
+        toast.error("cannot login");
       });
   };
 
