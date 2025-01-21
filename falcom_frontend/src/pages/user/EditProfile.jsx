@@ -5,6 +5,7 @@ import {
   getCurrentUserApi,
   uploadProfilePictureApi,
 } from "../../apis/Api";
+import { Navigate } from "react-router-dom";
 
 const EditProfile = () => {
   const [profile, setProfile] = useState({
@@ -44,8 +45,8 @@ const EditProfile = () => {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
-
-    window.location.href = "/login";
+    localStorage.removeItem("user"); // Clear user data
+    Navigate("/login", { replace: true });
   };
 
   const handleImageChange = (e) => {
