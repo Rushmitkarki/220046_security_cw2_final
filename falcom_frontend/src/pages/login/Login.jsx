@@ -121,7 +121,11 @@ const Login = () => {
           setShowOtpModal(false);
           localStorage.setItem("token", res.data.token);
           localStorage.setItem("user", JSON.stringify(res.data.user));
-          window.location.href = "/profile";
+          if (res.data.user.isAdmin) {
+            window.location.href = "/admin/dashboard";
+          } else {
+            window.location.href = "/profile";
+          }
         } else {
           toast.error(res.data.message || "Failed to verify OTP");
         }

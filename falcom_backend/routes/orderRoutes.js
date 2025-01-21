@@ -16,7 +16,7 @@ router.get("/get_orders_by_user", authGuard, orderController.getOrdersByUser);
 // Route to update order status
 router.post(
   "/update_order_status/:orderId",
-  adminGuard,
+
   orderController.updateOrderStatus
 );
 
