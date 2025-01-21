@@ -104,7 +104,9 @@ const Login = () => {
       })
       .catch((error) => {
         console.error("Error:", error);
-        toast.error("Unable to locate your account.");
+        toast.error(
+          "You are blocked for 15 minutes due to too many failed attempts."
+        );
       });
   };
 
@@ -201,14 +203,17 @@ const Login = () => {
           setShowResetPasswordModal(false);
           setFailedAttempts(0); // Reset failed attempts on success
         } else {
-          setFailedAttempts(failedAttempts + 1); // Increment failed attempts
-          toast.error(res.data.message || "Failed to reset password.");
+          setFailedAttempts(failedAttempts + 1);
+          toast.error(
+            res.data.message ||
+              "You have blocked for 15 minute for many attempts."
+          );
         }
       })
       .catch((error) => {
         console.error("Error resetting password:", error);
         setFailedAttempts(failedAttempts + 1); // Increment failed attempts
-        toast.error("Failed to reset password. Please try again.");
+        toast.error("You have blocked for 15 minute for many attempts.");
       });
   };
 

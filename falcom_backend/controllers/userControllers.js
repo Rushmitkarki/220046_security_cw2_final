@@ -16,6 +16,7 @@ const speakeasy = require("speakeasy");
 const nodemailer = require("nodemailer");
 const MAX_LOGIN_ATTEMPTS = 3;
 const BLOCK_DURATION = 15 * 60 * 1000;
+const MAX_OTP_ATTEMPTS = 3;
 const createUser = async (req, res) => {
   const { firstName, lastName, userName, email, phoneNumber, password } =
     req.body;
