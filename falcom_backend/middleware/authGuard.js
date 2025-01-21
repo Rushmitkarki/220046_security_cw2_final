@@ -156,10 +156,21 @@ const verifyRecaptcha = async (req, res, next) => {
   }
 };
 
+const isAdmin = (req, res, next) => {
+  if (req.user && req.user.isAdmin) {
+    next();
+  } else {
+    res.status(403).json({
+      success: false,
+      message: "Unauthorized: Admin access required",
+    });
+  }
+};
 module.exports = {
   authGuard,
   adminGuard,
   forgotPasswordLimiter,
   validateRequest,
   verifyRecaptcha,
+  isAdmin,
 };

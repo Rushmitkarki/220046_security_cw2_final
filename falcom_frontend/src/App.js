@@ -18,6 +18,7 @@ import usePreventBackToLogin from "./hooks/PreventBackToLogin";
 import TyreAgeCalculator from "../src/pages/user/TyreAgeCalculator";
 import PlaceOrder from "./pages/order/PlaceOrder";
 import ViewOrder from "./pages/admin/admin_dashboard/viewOrder";
+import UserLog from "./pages/admin/userlog/UserLog";
 
 const AppRoutes = () => {
   usePreventBackToLogin();
@@ -35,6 +36,7 @@ const AppRoutes = () => {
         <Route element={<AdminRoutes />}>
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/update/:id" element={<UpdateProduct />} />
+          <Route path="/userlog" element={<UserLog />} />
         </Route>
         <Route element={<UserRoutes />}>
           <Route path="/profile" element={<Profile />} />

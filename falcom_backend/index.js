@@ -54,7 +54,7 @@ app.use("/api/cart", require("./routes/cartRoutes"));
 app.use("/api/review", require("./routes/review&ratingRoutes"));
 app.use("/api/order", require("./routes/orderRoutes"));
 app.use("/api/khalti", require("./routes/paymentRoutes"));
-
+app.use("/api/admin", require("./routes/activityRoute"));
 // Starting the server (always at the last)
 https.createServer(options, app).listen(PORT, () => {
   console.log(`Server is running on PORT ${PORT}`);

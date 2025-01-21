@@ -363,11 +363,24 @@ const loginUser = async (req, res) => {
     const user = await userModel.findOne({ email });
 
     if (!user) {
+      await ActivityLog.create({
+        user: null,
+        action: "login_failed",
+        ipAddress: req.ip,
+        details: { email, reason: "User not found" },
+      });
+
       return res.status(400).json({
         success: false,
         message: "User doesn't exist",
       });
     }
+    await ActivityLog.create({
+      user: user._id,
+      action: "login",
+      ipAddress: req.ip,
+      details: { email },
+    });
 
     // Check if the user is blocked
     if (user.blockExpires && user.blockExpires > Date.now()) {
@@ -468,6 +481,12 @@ const verifyOTP = async (req, res) => {
     const user = await userModel.findById(userId);
 
     if (!user) {
+      await ActivityLog.create({
+        user: null,
+        action: "otp_failed",
+        ipAddress: req.ip,
+        details: { userId, reason: "User not found" },
+      });
       return res.status(404).json({
         success: false,
         message: "User not found",

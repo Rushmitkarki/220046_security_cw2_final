@@ -191,3 +191,6 @@ export const verifyRegistrationOtpApi = (data) =>
 // refresh token
 export const refreshTokenApi = (userId) =>
   Api.post(`/api/user/refresh-token/${userId}`);
+
+// getuser activity
+export const getUserActivityLogs = () => Api.get("/api/admin/activities");
