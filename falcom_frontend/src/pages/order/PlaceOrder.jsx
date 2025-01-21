@@ -103,7 +103,7 @@ const PlaceOrder = () => {
       const paymentResponse = await initializeKhaltiPaymentApi({
         orderId,
         totalPrice,
-        website_url: window.location.origin,
+        // website_url: window.location.origin,
       });
       if (paymentResponse.data.success) {
         const paymentUrl = paymentResponse.data.payment.payment_url;

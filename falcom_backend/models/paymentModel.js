@@ -1,9 +1,9 @@
 const mongoose = require("mongoose");
- 
+
 const paymentSchema = new mongoose.Schema(
   {
-    transactionId: { type: String, unique: true , },
-    pidx: { type: String, unique: true },
+    transactionId: { type: String },
+    pidx: { type: String },
     orderId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Order",
