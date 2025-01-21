@@ -4,13 +4,17 @@ import {
   initializeKhaltiPaymentApi,
   updateStatusApi,
   getCartApi,
+  getCurrentUserApi,
 } from "../../apis/Api";
 import { toast } from "react-hot-toast";
 import { useParams, useNavigate } from "react-router-dom";
+import DOMPurify from "dompurify"; // For sanitizing HTML
+import validator from "validator"; // For sanitizing inputs
 
 const PlaceOrder = () => {
   const [cart, setCart] = useState([]);
   const [subtotal, setSubtotal] = useState(0);
+  const [user, setUser] = useState(null); // State to store user details
   const params = useParams();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -26,6 +30,33 @@ const PlaceOrder = () => {
     deliveryFee: 40.0,
   });
 
+  // Fetch the current user's details
+  const fetchCurrentUser = async () => {
+    try {
+      const response = await getCurrentUserApi();
+      if (response.data.success) {
+        setUser(response.data.user);
+        // Auto-fill form fields if user data exists
+        setFormData((prev) => ({
+          ...prev,
+          firstName: DOMPurify.sanitize(response.data.user.firstName || ""),
+          lastName: DOMPurify.sanitize(response.data.user.lastName || ""),
+          email: DOMPurify.sanitize(response.data.user.email || ""),
+          street: DOMPurify.sanitize(response.data.user.street || ""),
+          city: DOMPurify.sanitize(response.data.user.city || ""),
+          state: DOMPurify.sanitize(response.data.user.state || ""),
+          zipCode: DOMPurify.sanitize(response.data.user.zipCode || ""),
+          country: DOMPurify.sanitize(response.data.user.country || ""),
+          phone: DOMPurify.sanitize(response.data.user.phone || ""),
+        }));
+      }
+    } catch (error) {
+      console.error("Error fetching user details:", error);
+      toast.error("Failed to fetch user details.");
+    }
+  };
+
+  // Fetch the user's cart
   const fetchCart = async () => {
     try {
       const res = await getCartApi();
@@ -43,7 +74,8 @@ const PlaceOrder = () => {
   };
 
   useEffect(() => {
-    fetchCart();
+    fetchCurrentUser(); // Fetch user details on component mount
+    fetchCart(); // Fetch cart details on component mount
   }, []);
 
   useEffect(() => {
@@ -54,11 +86,14 @@ const PlaceOrder = () => {
     setSubtotal(total);
   }, [cart]);
 
+  // Handle input changes and sanitize inputs
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    const sanitizedValue = DOMPurify.sanitize(value); // Sanitize input
+    setFormData((prev) => ({ ...prev, [name]: sanitizedValue }));
   };
 
+  // Validate order data
   const validateOrderData = () => {
     const {
       firstName,
@@ -69,7 +104,7 @@ const PlaceOrder = () => {
       state,
       zipCode,
       country,
-      phone,
+      phoneNumber,
     } = formData;
     if (
       !firstName ||
@@ -80,7 +115,7 @@ const PlaceOrder = () => {
       !state ||
       !zipCode ||
       !country ||
-      !phone
+      !phoneNumber
     ) {
       toast.error("Please fill all the fields.");
       return false;
@@ -98,12 +133,12 @@ const PlaceOrder = () => {
     return true;
   };
 
+  // Handle payment initialization
   const handlePayment = async (orderId, totalPrice) => {
     try {
       const paymentResponse = await initializeKhaltiPaymentApi({
         orderId,
         totalPrice,
-        // website_url: window.location.origin,
       });
       if (paymentResponse.data.success) {
         const paymentUrl = paymentResponse.data.payment.payment_url;
@@ -120,6 +155,7 @@ const PlaceOrder = () => {
     }
   };
 
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateOrderData()) return;
@@ -128,14 +164,14 @@ const PlaceOrder = () => {
     const orderData = {
       carts: cart,
       totalPrice: total,
-      name: formData.firstName + " " + formData.lastName,
-      email: formData.email,
-      street: formData.street,
-      city: formData.city,
-      state: formData.state,
-      zipCode: formData.zipCode,
-      country: formData.country,
-      phone: formData.phone,
+      name: DOMPurify.sanitize(formData.firstName + " " + formData.lastName),
+      email: DOMPurify.sanitize(formData.email),
+      street: DOMPurify.sanitize(formData.street),
+      city: DOMPurify.sanitize(formData.city),
+      state: DOMPurify.sanitize(formData.state),
+      zipCode: DOMPurify.sanitize(formData.zipCode),
+      country: DOMPurify.sanitize(formData.country),
+      phone: DOMPurify.sanitize(formData.phoneNumber),
       payment: false,
     };
 
@@ -180,7 +216,7 @@ const PlaceOrder = () => {
                     />
                     <div className="flex-grow">
                       <h3 className="font-semibold">
-                        {product.productId.productName}
+                        {DOMPurify.sanitize(product.productId.productName)}
                       </h3>
                       <p className="text-gray-400">Qty: {product.quantity}</p>
                     </div>
