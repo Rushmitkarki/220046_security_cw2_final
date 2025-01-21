@@ -1,4 +1,3 @@
-// export default Cart;
 import React, { useState, useEffect } from "react";
 import {
   getCartApi,
@@ -8,6 +7,7 @@ import {
 import { toast } from "react-toastify";
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
+import DOMPurify from "dompurify"; // Import DOMPurify
 
 const Cart = () => {
   const [cart, setCart] = useState([]);
@@ -25,6 +25,14 @@ const Cart = () => {
         const cartItems = res.data.products.map((item) => ({
           ...item,
           quantity: item.quantity,
+          productId: {
+            ...item.productId,
+            productName: DOMPurify.sanitize(item.productId.productName || ""), // Sanitize product name
+            productDescription: DOMPurify.sanitize(
+              item.productId.productDescription || ""
+            ), // Sanitize product description
+            productImage: DOMPurify.sanitize(item.productId.productImage || ""), // Sanitize image URL
+          },
         }));
         setCart(cartItems);
         setStringCart(JSON.stringify(cartItems));
@@ -38,6 +46,7 @@ const Cart = () => {
       setCart([]);
     }
   };
+
   const handleQuantityChange = async (index, change) => {
     const newQuantity = cart[index].quantity + change;
 
@@ -68,23 +77,6 @@ const Cart = () => {
       toast.error(response.message);
     }
   };
-
-  // const handleQuantityChange = (index, change) => {
-  //   const newQuantity = cart[index].quantity + change;
-  //   if (newQuantity < 1) {
-  //     toast.error("Quantity cannot be less than 1");
-  //     return;
-  //   }
-  //   if (newQuantity > cart[index].productId.productQuantity) {
-  //     toast.error("Out of Stock");
-  //     return;
-  //   }
-
-  //   const newCart = [...cart];
-  //   newCart[index].quantity = newQuantity;
-  //   setCart(newCart);
-  //   calculateSubtotal(newCart); // Recalculate subtotal after quantity change
-  // };
 
   const handleDeleteItem = async (id) => {
     try {
@@ -121,7 +113,7 @@ const Cart = () => {
             />
             <div className="flex-grow">
               <h2 className="text-xl font-bold mb-2">
-                {item.productId.productName}
+                {item.productId.productName} {/* Already sanitized */}
               </h2>
               <p className="text-green-500 font-bold mb-2">
                 NPR. {item.productId.productPrice}
@@ -155,10 +147,8 @@ const Cart = () => {
         <div className="mt-4 p-4 bg-gray-800 rounded-lg">
           <h2 className="text-2xl font-bold mb-4">Subtotal: NPR. {subtotal}</h2>
           <Link to={`/placeorder`}>
-            {/* <Link to={`/placeorder/`+ cart}> */}
             <button className="w-full py-3 bg-gradient-to-r from-orange-400 to-orange-500 text-white text-lg font-semibold rounded-lg shadow-md hover:from-orange-500 hover:to-orange-600 transition-all duration-300 flex items-center justify-center space-x-2">
               <span>Proceed to Checkout</span>
-
               <ArrowRight size={20} />
             </button>
           </Link>
@@ -172,4 +162,3 @@ const Cart = () => {
 };
 
 export default Cart;
-//
