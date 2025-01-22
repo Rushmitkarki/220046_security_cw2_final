@@ -45,13 +45,20 @@ const EditProfile = () => {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
-    localStorage.removeItem("user"); // Clear user data
+    localStorage.removeItem("user");
     Navigate("/login", { replace: true });
   };
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      // Validate file type
+      const allowedTypes = ["image/jpeg", "image/png", "image/gif"];
+      if (!allowedTypes.includes(file.type)) {
+        toast.error("Only image files (JPEG, PNG, GIF) are allowed.");
+        return;
+      }
+
       const formData = new FormData();
       formData.append("profilePicture", file);
 
