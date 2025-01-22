@@ -164,7 +164,9 @@ const Login = () => {
       })
       .catch((error) => {
         console.error("Error:", error);
-        toast.error("Cannot login");
+        toast.error(
+          "You have been block for 15 minutes due to too many attempts."
+        );
       });
   };
 
@@ -323,7 +325,7 @@ const Login = () => {
               <input
                 className="login-input"
                 type="password"
-                name="password" 
+                name="password"
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}

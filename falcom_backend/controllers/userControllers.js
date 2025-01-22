@@ -364,13 +364,6 @@ const loginUser = async (req, res) => {
     const user = await userModel.findOne({ email });
 
     if (!user) {
-      await ActivityLog.create({
-        user: null,
-        action: "login_failed",
-        ipAddress: req.ip,
-        details: { email, reason: "User not found" },
-      });
-
       return res.status(400).json({
         success: false,
         message: "User doesn't exist",
