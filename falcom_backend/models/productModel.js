@@ -4,6 +4,9 @@ const productSchema = new mongoose.Schema({
   productName: {
     type: String,
     required: true,
+    trim: true,
+    maxlength: 100,
+    match: /^[a-zA-Z0-9\s]+$/,
   },
   productCategory: {
     type: String,

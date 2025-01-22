@@ -58,6 +58,28 @@ const Profile = () => {
       }
     }
   }, [page, activeTab, searchQuery]);
+  const handleSearch = () => {
+    // Sanitize the search query
+    const sanitizedQuery = searchQuery.replace(/[^\w\s]/gi, "");
+
+    // Validate the input
+    if (!sanitizedQuery) {
+      alert(
+        "Invalid search input. Only alphanumeric characters and spaces are allowed."
+      );
+      return;
+    }
+
+    // Send the sanitized query to the backend
+    searchProductsApi(sanitizedQuery)
+      .then((res) => {
+        setProducts(res.data.products);
+        setTotalPages(1); // Reset pagination for search results
+      })
+      .catch((err) => {
+        setError(err.response?.data?.message || "Failed to fetch products.");
+      });
+  };
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -157,13 +179,14 @@ const Profile = () => {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Search for products..."
+                  onKeyPress={(e) => {
+                    if (e.key === "Enter") {
+                      handleSearch();
+                    }
+                  }}
                 />
                 <button
-                  onClick={() =>
-                    searchProductsApi(searchQuery).then((res) =>
-                      setProducts(res.data.products)
-                    )
-                  }
+                  onClick={handleSearch}
                   className="absolute right-2 top-2 text-gray-500 hover:text-gray-700 focus:outline-none"
                 >
                   <svg

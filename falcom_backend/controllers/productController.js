@@ -277,24 +277,54 @@ const getProductCount = async (req, res) => {
 // Search Products
 const searchProducts = async (req, res) => {
   try {
+    // Step 1: Get the search query from the request
     const searchQuery = req.query.q;
-    const page = parseInt(req.query.page) || 1;
-    const limit = req.query.limit || 10;
 
-    const products = await productModel
-      .find({
-        productName: { $regex: searchQuery, $options: "i" },
-      })
-      .skip((page - 1) * limit)
-      .limit(limit);
+    // Step 2: Validate and sanitize the input
+    if (!searchQuery || typeof searchQuery !== "string") {
+      return res.status(400).json({
+        success: false,
+        message: "Search query is required and must be a string.",
+      });
+    }
 
+    // Sanitize the input to remove special characters
+    const sanitizedQuery = searchQuery.replace(/[^\w\s]/gi, "");
+
+    if (!sanitizedQuery) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Invalid search input. Only alphanumeric characters and spaces are allowed.",
+      });
+    }
+
+    // Step 3: Limit the input length to prevent abuse
+    if (sanitizedQuery.length > 100) {
+      return res.status(400).json({
+        success: false,
+        message: "Search query is too long. Maximum length is 100 characters.",
+      });
+    }
+
+    // Step 4: Perform the search using a parameterized query
+    const products = await productModel.find({
+      productName: { $regex: sanitizedQuery, $options: "i" }, // Case-insensitive search
+    });
+
+    // Step 5: Log the search query for monitoring
+    console.log(`Search query: ${sanitizedQuery}`);
+
+    // Step 6: Return the results
     res.status(200).json({
       success: true,
       message: "Products fetched successfully",
       products: products,
     });
   } catch (error) {
-    console.error(error);
+    console.error("Error in searchProducts:", error);
+
+    // Step 7: Handle errors gracefully
     res.status(500).json({
       success: false,
       message: "Internal server error",
