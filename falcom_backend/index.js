@@ -19,6 +19,15 @@ app.use(express.static("./public"));
 // express fileupload
 app.use(accessFromData());
 
+// use hpp to prevent http parameter pollution
+const hpp = require("hpp");
+app.use(hpp());
+app.use(express.urlencoded({ extended: true }));
+
+// const csrf = require("csurf");
+// const csrfProtection = csrf({ cookie: true });
+// app.use(csrfProtection);
+
 //  cors configuration
 const corsOptions = {
   origin: true,
@@ -41,12 +50,10 @@ const PORT = process.env.PORT;
 app.get("/test", (req, res) => {
   res.send("Test API is Working!....");
 });
-
 const options = {
   key: fs.readFileSync(path.resolve(__dirname, "server.key")),
   cert: fs.readFileSync(path.resolve(__dirname, "server.crt")),
 };
-
 // Configuring Routes of User
 app.use("/api/user", require("./routes/userRoutes"));
 app.use("/api/product", require("./routes/productRoutes"));
@@ -55,6 +62,10 @@ app.use("/api/review", require("./routes/review&ratingRoutes"));
 app.use("/api/order", require("./routes/orderRoutes"));
 app.use("/api/khalti", require("./routes/paymentRoutes"));
 app.use("/api/admin", require("./routes/activityRoute"));
+
+// app.get("/api/csrf-token", (req, res) => {
+//   res.json({ csrfToken: req.csrfToken() }); // Send CSRF token to the client
+// });
 // Starting the server (always at the last)
 https.createServer(options, app).listen(PORT, () => {
   console.log(`Server is running on PORT ${PORT}`);

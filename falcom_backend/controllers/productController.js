@@ -14,14 +14,30 @@ const createProduct = async (req, res) => {
     productPrice,
     productQuantity,
   } = req.body;
+  // Sanitize input to handle duplicate parameters
+  const sanitizedProductName = Array.isArray(productName)
+    ? productName[0]
+    : productName;
+  const sanitizedProductCategory = Array.isArray(productCategory)
+    ? productCategory[0]
+    : productCategory;
+  const sanitizedProductDescription = Array.isArray(productDescription)
+    ? productDescription[0]
+    : productDescription;
+  const sanitizedProductPrice = Array.isArray(productPrice)
+    ? parseFloat(productPrice[0])
+    : parseFloat(productPrice);
+  const sanitizedProductQuantity = Array.isArray(productQuantity)
+    ? parseInt(productQuantity[0])
+    : parseInt(productQuantity);
 
   // Validating the data
   if (
-    !productName ||
-    !productCategory ||
-    !productDescription ||
-    !productPrice ||
-    !productQuantity
+    !sanitizedProductName ||
+    !sanitizedProductCategory ||
+    !sanitizedProductDescription ||
+    isNaN(sanitizedProductPrice) ||
+    isNaN(sanitizedProductQuantity)
   ) {
     return res.status(400).json({
       success: false,
@@ -30,7 +46,7 @@ const createProduct = async (req, res) => {
   }
 
   // Validate that price and quantity are not negative
-  if (productPrice < 0 || productQuantity < 0) {
+  if (sanitizedProductPrice < 0 || sanitizedProductQuantity < 0) {
     return res.status(400).json({
       success: false,
       message: "Price and quantity cannot be negative!",

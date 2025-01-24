@@ -1,4 +1,5 @@
 import axios from "axios";
+// import { csrfToken } from "../utils/csrfToken";
 
 // Creating backend config
 const Api = axios.create({
@@ -91,7 +92,7 @@ export const addToCartApi = (data) =>
 
 // Remove from Cart API
 export const removeFromCartApi = (id) =>
-  Api.delete(`/api/cart/remove_from_cart/${id}`, config);
+  Api.put(`/api/cart/remove_from_cart/${id}`, config);
 
 // update quantity in cart api
 export const updateQuantityApi = (data) =>
@@ -199,3 +200,14 @@ export const getUserActivityLogs = (config) =>
 // deleteuser
 export const deleteUserApi = (userId) =>
   Api.delete(`/api/admin/delete_user/${userId}`, config);
+
+// fetch("/api/submit", {
+//   method: "POST",
+//   headers: {
+//     "Content-Type": "application/json",
+//   },
+//   body: JSON.stringify({
+//     _csrf: csrfToken, // Include CSRF token in the request body
+//     data: "example",
+//   }),
+// });

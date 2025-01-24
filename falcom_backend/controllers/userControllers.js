@@ -353,7 +353,14 @@ const getUserByGoogleEmail = async (req, res) => {
 const loginUser = async (req, res) => {
   const { email, password, captchaToken } = req.body;
 
-  if (!email || !password || !captchaToken) {
+  // Ensure only the first value is used if duplicates are sent
+  const sanitizedEmail = Array.isArray(email) ? email[0] : email;
+  const sanitizedPassword = Array.isArray(password) ? password[0] : password;
+  const sanitizedCaptchaToken = Array.isArray(captchaToken)
+    ? captchaToken[0]
+    : captchaToken;
+
+  if (!sanitizedEmail || !sanitizedPassword || !sanitizedCaptchaToken) {
     return res.status(400).json({
       success: false,
       message: "All fields are required, including CAPTCHA!",
