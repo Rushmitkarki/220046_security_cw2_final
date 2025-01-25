@@ -127,7 +127,7 @@ const AdminDashboard = () => {
         formData,
         {
           headers: {
-            "X-CSRF-Token": csrfToken, 
+            "X-CSRF-Token": csrfToken,
           },
           withCredentials: true,
         }
@@ -151,26 +151,26 @@ const AdminDashboard = () => {
       }
     }
 
-    createProductApi(formData)
-      .then((res) => {
-        if (res.status === 201) {
-          toast.success(res.data.message);
-          fetchProducts();
-        }
-      })
-      .catch((err) => {
-        if (err.response) {
-          if (err.response.status === 400) {
-            toast.warning(err.response.data.message);
-          } else if (err.response.status === 500) {
-            toast.error(err.response.data.message);
-          } else {
-            toast.error("Something went wrong");
-          }
-        } else {
-          toast.error("Something went wrong");
-        }
-      });
+    // createProductApi(formData)
+    //   .then((res) => {
+    //     if (res.status === 201) {
+    //       toast.success(res.data.message);
+    //       fetchProducts();
+    //     }
+    //   })
+    //   .catch((err) => {
+    //     if (err.response) {
+    //       if (err.response.status === 400) {
+    //         toast.warning(err.response.data.message);
+    //       } else if (err.response.status === 500) {
+    //         toast.error(err.response.data.message);
+    //       } else {
+    //         toast.error("Something went wrong");
+    //       }
+    //     } else {
+    //       toast.error("Something went wrong");
+    //     }
+    //   });
   };
 
   const handleDeleteClick = (id) => {
