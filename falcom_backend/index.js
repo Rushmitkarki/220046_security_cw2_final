@@ -7,6 +7,7 @@ const accessFromData = require("express-fileupload");
 const fs = require("fs");
 const path = require("path");
 const https = require("https");
+const helmet = require("helmet");
 
 // Creating an express app
 const app = express();
@@ -15,6 +16,20 @@ const app = express();
 app.use(express.json());
 
 app.use(express.static("./public"));
+
+// Helmet Configuration
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "trusted-cdn.com"],
+        styleSrc: ["'self'", "fonts.googleapis.com"],
+        imgSrc: ["'self'", "data:", "trusted-cdn.com"],
+      },
+    },
+  })
+);
 
 // express fileupload
 app.use(accessFromData());
