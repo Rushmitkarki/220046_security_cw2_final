@@ -201,13 +201,23 @@ export const getUserActivityLogs = (config) =>
 export const deleteUserApi = (userId) =>
   Api.delete(`/api/admin/delete_user/${userId}`, config);
 
-// fetch("/api/submit", {
-//   method: "POST",
-//   headers: {
-//     "Content-Type": "application/json",
-//   },
-//   body: JSON.stringify({
-//     _csrf: csrfToken, // Include CSRF token in the request body
-//     data: "example",
-//   }),
-// });
+const fetchCsrfToken = async () => {
+  try {
+    const response = await axios.get("https://localhost:5000/api/csrf-token", {
+      withCredentials: true, // Include cookies
+    });
+    return response.data.csrfToken; // Return the CSRF token
+  } catch (error) {
+    console.error("Error fetching CSRF token:", error);
+    return null;
+  }
+};
+
+// Store the CSRF token in a variable or state
+let csrfToken = null;
+
+// Fetch and store the CSRF token when the app loads
+fetchCsrfToken().then((token) => {
+  csrfToken = token;
+  console.log("CSRF Token:", csrfToken);
+});

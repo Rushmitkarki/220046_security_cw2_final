@@ -9,6 +9,7 @@ import {
 import backgroundImage from "../../../assets/images/cliptire.png";
 import ViewOrder from "./viewOrder";
 import UserLog from "../userlog/UserLog";
+import axios from "axios";
 
 const AdminDashboard = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -29,6 +30,26 @@ const AdminDashboard = () => {
 
   const [products, setProducts] = useState([]);
   const [productIdToDelete, setProductIdToDelete] = useState(null);
+  const [csrfToken, setCsrfToken] = useState(null); // State to store CSRF token
+
+  // Fetch CSRF token when the component mounts
+  useEffect(() => {
+    const fetchCsrfToken = async () => {
+      try {
+        const response = await axios.get(
+          "https://localhost:5000/api/csrf-token",
+          {
+            withCredentials: true, // Include cookies
+          }
+        );
+        setCsrfToken(response.data.csrfToken); // Store the CSRF token
+      } catch (error) {
+        console.error("Error fetching CSRF token:", error);
+      }
+    };
+
+    fetchCsrfToken();
+  }, []);
 
   const navigate = useNavigate();
 
@@ -87,7 +108,7 @@ const AdminDashboard = () => {
     return valid;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) {
       return;
@@ -100,6 +121,35 @@ const AdminDashboard = () => {
     formData.append("productCategory", productCategory);
     formData.append("productImage", productImage);
     formData.append("productQuantity", productQuantity);
+    try {
+      const response = await axios.post(
+        "https://localhost:5000/api/product/create",
+        formData,
+        {
+          headers: {
+            "X-CSRF-Token": csrfToken, 
+          },
+          withCredentials: true,
+        }
+      );
+
+      if (response.status === 201) {
+        toast.success(response.data.message);
+        fetchProducts();
+      }
+    } catch (error) {
+      if (error.response) {
+        if (error.response.status === 400) {
+          toast.warning(error.response.data.message);
+        } else if (error.response.status === 500) {
+          toast.error(error.response.data.message);
+        } else {
+          toast.error("Something went wrong");
+        }
+      } else {
+        toast.error("Something went wrong");
+      }
+    }
 
     createProductApi(formData)
       .then((res) => {

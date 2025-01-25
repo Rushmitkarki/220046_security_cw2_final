@@ -8,9 +8,16 @@ const fs = require("fs");
 const path = require("path");
 const https = require("https");
 const helmet = require("helmet");
+const csrf = require("csurf");
+const cookieParser = require("cookie-parser");
 
 // Creating an express app
 const app = express();
+
+app.use(cookieParser());
+
+// CSRF protection middleware
+const csrfProtection = csrf({ cookie: true }); // Initialize csrfProtection
 
 // Express Json Config
 app.use(express.json());
@@ -78,10 +85,18 @@ app.use("/api/order", require("./routes/orderRoutes"));
 app.use("/api/khalti", require("./routes/paymentRoutes"));
 app.use("/api/admin", require("./routes/activityRoute"));
 
-// app.get("/api/csrf-token", (req, res) => {
-//   res.json({ csrfToken: req.csrfToken() }); // Send CSRF token to the client
-// });
-// Starting the server (always at the last)
+app.get("/api/csrf-token", csrfProtection, (req, res) => {
+  res.json({ csrfToken: req.csrfToken() });
+});
+
+app.use((err, req, res, next) => {
+  if (err.code === "EBADCSRFTOKEN") {
+    res.status(403).json({ success: false, message: "Invalid CSRF token" });
+  } else {
+    next(err);
+  }
+});
+
 https.createServer(options, app).listen(PORT, () => {
   console.log(`Server is running on PORT ${PORT}`);
 });
